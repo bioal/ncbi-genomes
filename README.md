@@ -1,1 +1,1 @@
-# ncbi-genomes
+# NCBI Genomes
