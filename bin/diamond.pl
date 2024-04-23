@@ -24,7 +24,7 @@ if (@ARGV != 2) {
 my ($query, $target) = @ARGV;
 
 my $out_file = "$query-$target.tsv";
-my $err_file = "SC-SP.very.err";
+my $err_file = "$query-$target.err";
 
 my $options = "";
 if ($OPT{f}) {
