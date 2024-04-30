@@ -27,16 +27,23 @@ for my $arg (@ARGV) {
     }
 }
 
+my $KEY_COL = 0;
 while (<STDIN>) {
     chomp;
-    if (/^##  /) {
+    if (/^#+  /) {
         next;
     }
+    my @f = split(/\t/, $_, -1);
     if (/^#/) {
         print "$_\n";
+        for (my $i=0; $i<@f; $i++) {
+            if ($f[$i] eq "taxid") {
+                $KEY_COL = $i;
+                last;
+            }
+        }
     }
-    my @f = split(/\t/, $_, -1);
-    if ($TAXON{$f[0]}) {
+    if ($TAXON{$f[$KEY_COL]}) {
         print "$_\n";
     }
 }
