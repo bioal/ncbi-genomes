@@ -96,11 +96,3 @@ sub get_local_file_time {
 
     return $time;
 }
-
-sub get_local_file_size {
-    my ($file) = @_;
-
-    my @stat = stat $file;
-
-    return $stat[7];
-}
