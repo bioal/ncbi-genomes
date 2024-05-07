@@ -7,18 +7,31 @@ my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM [assembly_summary.txt]
 -c: check only
+-d DIR: download directory
 ";
 
 my $COMMAND = "curl --max-time 100000 -LfsS";
 
 my %OPT;
-getopts('c', \%OPT);
+getopts('cd:', \%OPT);
+
+my $PWD = `pwd`;
+chomp $PWD;
+
+if ($OPT{d}) {
+    chdir $OPT{d} or die;
+}
 
 !@ARGV && -t and die $USAGE;
-if (@ARGV && $ARGV[0] =~ /(GCF_\S+)$/) {
-    my $url = $ARGV[0];
-    get_GCF($url);
-    exit;
+if (@ARGV) {
+    if ($ARGV[0] =~ /(GCF_\S+)$/) {
+        my $url = $ARGV[0];
+        get_GCF($url);
+        exit;
+    } elsif ($ARGV[0] =~ /^\//) {
+    } else {
+        $ARGV[0] = "$PWD/$ARGV[0]";
+    }
 }
 
 while (<>) {
