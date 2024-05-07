@@ -5,7 +5,7 @@ use Getopt::Std;
 use HTTP::Date 'str2time', 'time2iso';
 my $PROGRAM = basename $0;
 my $USAGE=
-"Usage: $PROGRAM [assembly_summary.txt]
+"Usage: $PROGRAM [assembly_summary.txt | http://...GCF_...]
 -c: check only
 -d DIR: download directory
 ";
