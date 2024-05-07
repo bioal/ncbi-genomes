@@ -16,7 +16,6 @@ if (!@ARGV) {
 }
 
 my %TAXON;
-
 for my $arg (@ARGV) {
     if ($arg eq "human") {
         $TAXON{"9606"} = 1;
@@ -27,7 +26,7 @@ for my $arg (@ARGV) {
     }
 }
 
-my $KEY_COL = 0;
+my $TAXID_COL = 0; # default column for taxid
 while (<STDIN>) {
     chomp;
     if (/^#+  /) {
@@ -38,12 +37,12 @@ while (<STDIN>) {
         print "$_\n";
         for (my $i=0; $i<@f; $i++) {
             if ($f[$i] eq "taxid") {
-                $KEY_COL = $i;
+                $TAXID_COL = $i;
                 last;
             }
         }
     }
-    if ($TAXON{$f[$KEY_COL]}) {
+    if ($TAXON{$f[$TAXID_COL]}) {
         print "$_\n";
     }
 }
