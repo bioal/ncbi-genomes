@@ -8,12 +8,13 @@ my $USAGE=
 "Usage: $PROGRAM [assembly_summary.txt | http://...GCF_...]
 -c: check only
 -d DIR: download directory
+-e: eukaryotes only
 ";
 
 my $COMMAND = "curl --max-time 100000 -LfsS";
 
 my %OPT;
-getopts('cd:', \%OPT);
+getopts('cd:e', \%OPT);
 
 my $PWD = `pwd`;
 chomp $PWD;
@@ -34,13 +35,44 @@ if (@ARGV) {
     }
 }
 
+### Read assembly_summary.txt
+
+my %EUKARYOTES = (
+    "vertebrate_mammalian" => 1,
+    "vertebrate_other" => 1,
+    "invertebrate" => 1,
+    "plant" => 1,
+    "fungi" => 1,
+    "protozoa" => 1,
+    );
+
+my %OTHERS = (
+    "bacteria" => 1,
+    "archaea" => 1,
+    "viral" => 1,
+    );
+
 while (<>) {
     chomp;
     if (/^#/) {
         next;
     }
+
     my @f = split(/\t/, $_, -1);
+    if (@f != 38) {
+        die $_;
+    }
     my $url = $f[19];
+
+    if ($OPT{e}) {
+        my $group = $f[24];
+        if ($EUKARYOTES{$group}) {
+        } elsif ($OTHERS{$group}) {
+            next;
+        } else {
+            die $_;
+        }
+    }
     get_GCF($url);
 }
 
