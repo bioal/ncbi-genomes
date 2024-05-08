@@ -5,11 +5,12 @@ use Getopt::Std;
 my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM [assembly_summary.txt]
+-h: show header line
 -r: reference or representative genomes only
 ";
 
 my %OPT;
-getopts('r', \%OPT);
+getopts('hr', \%OPT);
 
 my %EUKARYOTES = (
     "vertebrate_mammalian" => 1,
@@ -29,7 +30,13 @@ my %OTHERS = (
 my %GENOME;
 while (<>) {
     chomp;
+    if (/^#+  /) {
+        next;
+    }
     if (/^#/) {
+        if ($OPT{h}) {
+            print "$_\n";
+        }
         next;
     }
 
