@@ -5,10 +5,11 @@ use Getopt::Std;
 my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM
+-r: reference or representative genomes only
 ";
 
 my %OPT;
-getopts('', \%OPT);
+getopts('r', \%OPT);
 
 my %EUKARYOTES = (
     "vertebrate_mammalian" => 1,
@@ -38,6 +39,12 @@ while (<>) {
     }
     my $id = $f[0];
     my $group = $f[24];
+
+    if ($OPT{r}) {
+        if ($f[4] eq "na") {
+            next;
+        }
+    }
 
     if ($EUKARYOTES{$group}) {
         $GENOME{$id} = $_;
