@@ -54,7 +54,8 @@ while (<>) {
 
 ### Print counts for each group in the order of @GROUPS
 for my $group (@GROUPS) {
-    print "$COUNT{$group}\t$group\n";
+    my $count = $COUNT{$group} || 0;
+    print "$count\t$group\n";
 }
 
 ### Print other categories if any detected
