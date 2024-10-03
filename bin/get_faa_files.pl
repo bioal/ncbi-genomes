@@ -6,7 +6,7 @@ use HTTP::Date 'str2time', 'time2iso';
 my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM [assembly_summary.txt | http://...GCF_...]
--c: check only
+-q: check only and quit
 -d DIR: download directory
 -e: eukaryotes only
 ";
@@ -14,7 +14,7 @@ my $USAGE=
 my $COMMAND = "curl --max-time 100000 -LfsS";
 
 my %OPT;
-getopts('cd:e', \%OPT);
+getopts('qd:e', \%OPT);
 
 my $PWD = `pwd`;
 chomp $PWD;
@@ -92,7 +92,7 @@ sub get_GCF {
             check_update($url, "${1}_protein.faa.gz", "${1}_protein.faa");
         } else {
             print "Download: ${1}_protein.faa.gz\n";
-            if (!$OPT{c}) {
+            if (!$OPT{q}) {
                 system "$COMMAND -OR $url/${1}_protein.faa.gz";
             }
         }
@@ -114,7 +114,7 @@ sub check_update {
         print "Already updated: $filename\n";
     } else {
         print "Update $filename: $local_file_time => new $ftp_time\n";
-        if (!$OPT{c}) {
+        if (!$OPT{q}) {
             system "$COMMAND -OR $url/$filename";
         }
     }
