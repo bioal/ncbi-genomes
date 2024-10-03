@@ -7,20 +7,20 @@ my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM [assembly_summary.txt | http://...GCF_...]
 -q: check only and quit
--d DIR: download directory
+-o DIR: download directory
 -e: eukaryotes only
 ";
 
 my $COMMAND = "curl --max-time 100000 -LfsS";
 
 my %OPT;
-getopts('qd:e', \%OPT);
+getopts('qo:e', \%OPT);
 
 my $PWD = `pwd`;
 chomp $PWD;
 
-if ($OPT{d}) {
-    chdir $OPT{d} or die;
+if ($OPT{o}) {
+    chdir $OPT{o} or die;
 }
 
 !@ARGV && -t and die $USAGE;
@@ -91,7 +91,7 @@ sub get_GCF {
         } elsif (-f "${1}_protein.faa") {
             check_update($url, "${1}_protein.faa.gz", "${1}_protein.faa");
         } else {
-            print "Download: ${1}_protein.faa.gz\n";
+            print "Download: $url/${1}_protein.faa.gz\n";
             if (!$OPT{q}) {
                 system "$COMMAND -OR $url/${1}_protein.faa.gz";
             }
@@ -111,7 +111,7 @@ sub check_update {
 
     my $local_file_time = get_local_file_time($local_filename);
     if ($local_file_time eq $ftp_time) {
-        print "Already updated: $filename\n";
+        print "Already updated: $url/$filename\n";
     } else {
         print "Update $filename: $local_file_time => new $ftp_time\n";
         if (!$OPT{q}) {
