@@ -6,15 +6,16 @@ use HTTP::Date 'str2time', 'time2iso';
 my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM [assembly_summary.txt | http://...GCF_...]
--q: check only and quit
--o DIR: download directory
 -e: eukaryotes only
+-o DIR: download directory
+-q: check only and quit
+-d: debug
 ";
 
 my $COMMAND = "curl --max-time 100000 -LfsS";
 
 my %OPT;
-getopts('qo:e', \%OPT);
+getopts('eo:qd', \%OPT);
 
 my $PWD = `pwd`;
 chomp $PWD;
@@ -91,7 +92,11 @@ sub get_GCF {
         } elsif (-f "${1}_protein.faa") {
             check_update($url, "${1}_protein.faa.gz", "${1}_protein.faa");
         } else {
-            print "Download: $url/${1}_protein.faa.gz\n";
+            if ($OPT{d}) {
+                print "Download: $url/${1}_protein.faa.gz\n";
+            } else {
+                print "Download: ${1}_protein.faa.gz\n";
+            }
             if (!$OPT{q}) {
                 system "$COMMAND -OR $url/${1}_protein.faa.gz";
             }
@@ -111,7 +116,11 @@ sub check_update {
 
     my $local_file_time = get_local_file_time($local_filename);
     if ($local_file_time eq $ftp_time) {
-        print "Already updated: $url/$filename\n";
+        if ($OPT{d}) {
+            print "Already updated: $url/$filename\n";
+        } else {
+            print "Already updated: $filename\n";
+        }
     } else {
         print "Update $filename: $local_file_time => new $ftp_time\n";
         if (!$OPT{q}) {
