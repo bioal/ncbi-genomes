@@ -4,15 +4,13 @@ use File::Basename;
 use Getopt::Std;
 my $PROGRAM = basename $0;
 my $USAGE=
-"Usage: $PROGRAM assembly_summary_refseq.txt > group_count.txt
+"Usage: $PROGRAM > group_count.txt
 -a: output all groups
 -t: output total count
 ";
 
 my %OPT;
 getopts('at', \%OPT);
-
-!@ARGV && -t and die $USAGE;
 
 ### Predefined groups
 my @EUKARYOTES = (
@@ -40,22 +38,35 @@ for my $group (@EUKARYOTES, @PROKARYOTES, @VIRUSES) {
 my %COUNT;
 my %COUNT_OTHERS;
 my $COUNT_TOTAL = 0;
-while (<>) {
-    chomp;
-    if (/^#/) {
-        next;
-    }
 
-    my @f = split(/\t/, $_, -1);
-    if (@f != 38) {
-        die $_;
-    }
-    my $id = $f[0];
-    my $group = $f[24];
-    if ($GROUP{$group}) {
-        $COUNT{$group} ++;
-    } else {
-        $COUNT_OTHERS{$group} ++;
+if (-t) {
+    open(my $fh, "/home/chiba/github/bioal/ncbi-genomes/data/assembly_summary_refseq.txt") || die "$!";
+    extract_data($fh);
+    close($fh);
+} else {
+    extract_data(*STDIN);
+}
+
+sub extract_data {
+    my ($fh) = @_;
+
+    while (<$fh>) {
+        chomp;
+        if (/^#/) {
+            next;
+        }
+
+        my @f = split(/\t/, $_, -1);
+        if (@f != 38) {
+            die $_;
+        }
+        my $id = $f[0];
+        my $group = $f[24];
+        if ($GROUP{$group}) {
+            $COUNT{$group} ++;
+        } else {
+            $COUNT_OTHERS{$group} ++;
+        }
     }
 }
 
