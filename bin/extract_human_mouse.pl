@@ -11,6 +11,8 @@ my $USAGE=
 my %OPT;
 getopts('r', \%OPT);
 
+my $TAXID_COL = 0; # default column for taxid
+my $reference_col;
 my $human_ref = "";
 my $human_others = "";
 my $mouse = "";
@@ -19,23 +21,32 @@ while (<>) {
     if (/^#+  /) {
         next;
     }
+    my @f = split(/\t/, $_, -1);
     if (/^#/) {
         print "$_\n";
+        for (my $i=0; $i<@f; $i++) {
+            if ($f[$i] eq "taxid") {
+                $TAXID_COL = $i;
+            }
+            if ($f[$i] eq "refseq_category") {
+                $reference_col = $i;
+            }
+        }
+        next;
     }
-    my @f = split(/\t/, $_, -1);
     if ($OPT{r}) {
-        if ($f[4] ne "reference genome") {
+        if ($f[$reference_col] ne "reference genome") {
             next;
         }
     }
-    if ($f[5] eq "9606") {
-        if ($f[4] eq "reference genome") {
+    if ($f[$TAXID_COL] eq "9606") {
+        if ($reference_col and $f[$reference_col] eq "reference genome") {
             $human_ref .= "$_\n";
         } else {
             $human_others .= "$_\n";
         }
     }
-    if ($f[5] eq "10090") {
+    if ($f[$TAXID_COL] eq "10090") {
         $mouse .= "$_\n";
     }
 }
