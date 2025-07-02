@@ -21,6 +21,7 @@ my $PWD = `pwd`;
 chomp $PWD;
 
 if ($OPT{o}) {
+    mkdir $OPT{o} unless -d $OPT{o};
     chdir $OPT{o} or die;
 }
 
