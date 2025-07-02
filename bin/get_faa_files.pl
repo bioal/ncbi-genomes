@@ -63,6 +63,7 @@ while (<>) {
     if (@f != 38) {
         die $_;
     }
+    my $id = $f[0];
     my $url = $f[19];
 
     if ($OPT{e}) {
@@ -74,7 +75,7 @@ while (<>) {
             die $_;
         }
     }
-    get_GCF($url);
+    get_GCF($url, $id);
 }
 
 ################################################################################
@@ -82,10 +83,9 @@ while (<>) {
 ################################################################################
 
 sub get_GCF {
-    my ($url) = @_;
+    my ($url, $id) = @_;
 
     $url =~ s/^https:\/\///;
-
     if ($url =~ /(GCF_\S+)$/) {
         if (-f "${1}_protein.faa.gz") {
             check_update($url, "${1}_protein.faa.gz", "${1}_protein.faa.gz");
@@ -102,8 +102,7 @@ sub get_GCF {
             }
         }
     } else {
-        print STDERR "ERROR: $url is not a valid GCF\n";
-        exit 1;
+        print STDERR "Cannot download $id ($url)\n";
     }
 }
 
