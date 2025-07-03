@@ -6,12 +6,13 @@ my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM query target
 -f: fast-mode
+-u: ultra-sensitive mode
 -t: output title
 -s: output to stdout
 ";
 
 my %OPT;
-getopts('tf', \%OPT);
+getopts('futs', \%OPT);
 
 if (@ARGV != 2) {
     print STDERR $USAGE;
@@ -24,6 +25,8 @@ my $err_file = "$query-$target.err";
 
 my $options = "";
 if ($OPT{f}) {
+} elsif ($OPT{u}) {
+    $options .= "--ultra-sensitive";
 } else {
     $options .= "--very-sensitive";
 }
