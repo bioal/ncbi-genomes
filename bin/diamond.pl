@@ -7,15 +7,11 @@ my $USAGE=
 "Usage: $PROGRAM query target
 -f: fast-mode
 -t: output title
+-s: output to stdout
 ";
 
 my %OPT;
 getopts('tf', \%OPT);
-
-my $outfmt = "";
-if ($OPT{t}) {
-    $outfmt .= "qtitle stitle";
-}
 
 if (@ARGV != 2) {
     print STDERR $USAGE;
@@ -32,6 +28,14 @@ if ($OPT{f}) {
     $options .= "--very-sensitive";
 }
 
-system "diamond blastp $options -k 1000 -q $query -d $target --outfmt 6 qseqid sseqid bitscore $outfmt -o $out_file 2> $err_file";
+if ($OPT{t}) {
+    my $outfmt = "";
+    $outfmt .= "qtitle stitle";
+    system "diamond blastp $options -k 1000 -q $query -d $target --outfmt 6 qseqid sseqid bitscore $outfmt -o $out_file 2> $err_file";
+} else {
+    system "diamond blastp $options -k 1000 -q $query -d $target -o $out_file 2> $err_file";
+}
 
-system "cat $out_file";
+if ($OPT{s}) {
+    system "cat $out_file";
+}
