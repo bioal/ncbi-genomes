@@ -4,7 +4,7 @@ use File::Basename;
 use Getopt::Std;
 my $PROGRAM = basename $0;
 my $USAGE=
-"Usage: $PROGRAM
+"Usage: cat gene2refseq.gz | gz | $PROGRAM 9606 10090
 -v: refseq with version
 ";
 
