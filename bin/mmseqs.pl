@@ -32,3 +32,8 @@ if ($OPT{s}) {
 # $options .= " --alignment-mode 4";
 
 system "$binary easy-search $file1 $file2 $out_file $tmp_dir $options > $log_file";
+my $exit_code = $? >> 8;
+if ($exit_code != 0) {
+    print STDERR "Command failed with exit code $exit_code\n";
+    exit $exit_code;
+}
