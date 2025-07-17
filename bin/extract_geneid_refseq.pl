@@ -4,20 +4,39 @@ use File::Basename;
 use Getopt::Std;
 my $PROGRAM = basename $0;
 my $USAGE=
-"Usage: cat gene2refseq.gz | gz | $PROGRAM 9606 10090
+"Usage: cat gene2refseq.gz | gz | $PROGRAM [-f target_taxid] [9606 10090]
+-f TARGET_TAXID_FILE
 -v: refseq with version
 ";
 
 my %OPT;
-getopts('v', \%OPT);
+getopts('f:v', \%OPT);
 
 my %TARGET_TAX;
-for my $taxid (@ARGV) {
-    if ($taxid =~ /^\d+$/) {
-        $TARGET_TAX{$taxid} = 1;
-    } else {
-        print STDERR "Invalid taxid: $taxid\n";
+if ($OPT{f}) {
+    if (!-f $OPT{f}) {
+        print STDERR "File not found: $OPT{f}\n";
         exit 1;
+    }
+    open my $fh, '<', $OPT{f} or die "Cannot open file $OPT{f}: $!";
+    while (<$fh>) {
+        chomp;
+        if (/^\d+$/) {
+            $TARGET_TAX{$_} = 1;
+        } else {
+            print STDERR "Invalid taxid in file: $_\n";
+            exit 1;
+        }
+    }
+    close $fh;
+} else {
+    for my $taxid (@ARGV) {
+        if ($taxid =~ /^\d+$/) {
+            $TARGET_TAX{$taxid} = 1;
+        } else {
+            print STDERR "Invalid taxid: $taxid\n";
+            exit 1;
+        }
     }
 }
 
