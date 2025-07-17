@@ -6,11 +6,16 @@ my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: cat gene2refseq.gz | gz | $PROGRAM [-f target_taxid] [9606 10090]
 -f TARGET_TAXID_FILE
+-o OUT_DIR
 -v: refseq with version
 ";
 
 my %OPT;
-getopts('f:v', \%OPT);
+getopts('f:o:v', \%OPT);
+
+if ($OPT{o}) {
+    mkdir_with_check($OPT{o});
+}
 
 my %TARGET_TAX;
 if ($OPT{f}) {
@@ -29,14 +34,13 @@ if ($OPT{f}) {
         }
     }
     close $fh;
-} else {
-    for my $taxid (@ARGV) {
-        if ($taxid =~ /^\d+$/) {
-            $TARGET_TAX{$taxid} = 1;
-        } else {
-            print STDERR "Invalid taxid: $taxid\n";
-            exit 1;
-        }
+}
+for my $taxid (@ARGV) {
+    if ($taxid =~ /^\d+$/) {
+        $TARGET_TAX{$taxid} = 1;
+    } else {
+        print STDERR "Invalid taxid: $taxid\n";
+        exit 1;
     }
 }
 
@@ -62,9 +66,32 @@ while (<STDIN>) {
     if (!$OPT{v} && $refseq =~ /^(\S+)\.(\d+)$/) {
         $refseq = $1;
     }
-    if ($hash{"$geneid\t$refseq"}) {
+    if ($hash{$taxid}{"$geneid\t$refseq"}) {
         next;  # Skip duplicates
     }
-    $hash{"$geneid\t$refseq"} = 1;
-    print "$geneid\t$refseq\n";
+    $hash{$taxid}{"$geneid\t$refseq"} = 1;
+    if (!$OPT{o}) {
+        print "$geneid\t$refseq\n";
+    }
+}
+
+if ($OPT{o}) {
+    for my $taxid (sort {$a <=> $b} keys %hash) {
+        my $out_file = "$OPT{o}/$taxid";
+        open my $out_fh, '>', $out_file or die "Cannot open file $out_file: $!";
+        for my $geneid_refseq (sort keys %{$hash{$taxid}}) {
+            print $out_fh "$geneid_refseq\n";
+        }
+        close $out_fh;
+    }
+}
+
+################################################################################
+### Function ###################################################################
+################################################################################
+
+sub mkdir_with_check {
+    my ($file_or_dir) = @_;
+
+    system "mkdir -p $file_or_dir";
 }
