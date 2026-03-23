@@ -1,0 +1,111 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Basename;
+use Getopt::Std;
+my $PROGRAM = basename $0;
+my $USAGE=
+"Usage: $PROGRAM FAA_FILE_1 FAA_FILE_2
+";
+
+# my $SEARCH_COMMAND = "mmseqs.pl -s 8.5";
+my $SEARCH_COMMAND = "diamond.pl -f";
+
+my %OPT;
+getopts('', \%OPT);
+
+if (!@ARGV) {
+    print STDERR $USAGE;
+    exit 1;
+}
+my ($FILE1, $FILE2) = @ARGV;
+
+my $NAME1 = basename $FILE1;
+my $NAME2 = basename $FILE2;
+my $DIR_NAME = "${NAME1}-${NAME2}";
+my $MAP_TO_GENE_DIR = "geneid_refseq";
+
+my $PWD = `pwd`;
+chomp($PWD);
+my $PATH1 = "$PWD/$FILE1";
+my $PATH2 = "$PWD/$FILE2";
+
+mkdir_with_check("$DIR_NAME");
+chdir $DIR_NAME or die "Cannot change directory to $DIR_NAME: $!";
+
+my $LOG_FILE_PATH = "$PWD/$DIR_NAME/log";
+open(LOG, '>', $LOG_FILE_PATH) or die "Cannot open log file $LOG_FILE_PATH: $!";
+
+homology_search($PATH1, $PATH2);
+homology_search($PATH2, $PATH1);
+homology_search($PATH1, $PATH1);
+homology_search($PATH2, $PATH2);
+
+select_closest_paralog($NAME1);
+select_closest_paralog($NAME2);
+
+select_ortholog($NAME1, $NAME2);
+select_ortholog($NAME2, $NAME1);
+
+close(LOG);
+
+################################################################################
+### Functions ##################################################################
+################################################################################
+
+sub select_ortholog {
+    my ($name1, $name2) = @_;
+
+    my $pair = "${name1}-${name2}";
+    if (-s "${pair}.max_score" and -s "${name1}.closest_paralog" and ! -s "${name1}.ortholog") {
+        exec_with_time("cat ${pair}.max_score | select_ortholog.pl ${name1}.closest_paralog > ${name1}.ortholog");
+    }
+}
+
+sub select_closest_paralog {
+    my ($name) = @_;
+
+    if (-s "${name}-${name}.max_score" and ! -s "${name}.closest_paralog") {
+        exec_with_time("cat ${name}-${name}.max_score | select_closest_paralog.pl > ${name}.closest_paralog");
+    }
+}
+
+sub homology_search {
+    my ($path1, $path2) = @_;
+
+    my $name1 = basename $path1;
+    my $name2 = basename $path2;
+    my $pair = "${name1}-${name2}";
+    if (! -s "${pair}.tsv") {
+        exec_with_time("$SEARCH_COMMAND $path1 $path2");
+    }
+    if (-s "${pair}.tsv" and ! -s "${pair}.map_to_gene") {
+        exec_with_time("cat ${pair}.tsv | map_to_gene.pl $PWD/$MAP_TO_GENE_DIR/$name1 $PWD/$MAP_TO_GENE_DIR/$name2 > ${pair}.map_to_gene 2> ${pair}.map_to_gene.err")
+    }
+    if (-s "${pair}.map_to_gene" and ! -s "${pair}.max_score") {
+        exec_with_time("cat ${pair}.map_to_gene | select_max_score.pl > ${pair}.max_score")
+    }
+}
+
+sub exec_with_time {
+    my ($command) = @_;
+
+    print LOG "\$ $command\n";
+
+    my $start_time = time;
+    system $command;
+    my $end_time = time;
+    my $elapsed_time = $end_time - $start_time;
+
+    print LOG "$elapsed_time sec\n";
+    my $exit_code = $? >> 8;
+    if ($exit_code != 0) {
+        print STDERR "Command failed with exit code $exit_code\n";
+        exit $exit_code;
+    }
+}
+
+sub mkdir_with_check {
+    my ($file_or_dir) = @_;
+
+    system "mkdir -p $file_or_dir";
+}
