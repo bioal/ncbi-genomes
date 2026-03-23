@@ -16,12 +16,17 @@ if (!@ARGV) {
 }
 
 my %MAPPING;
+my %MAPPING_FILE_LOADED;
 for my $mapping_file (@ARGV) {
     if (!-f $mapping_file) {
         print STDERR "File not found: $mapping_file\n";
         exit 1;
     }
+    if ($MAPPING_FILE_LOADED{$mapping_file}) {
+        next;  # Skip if already loaded
+    }
     read_mapping_file($mapping_file, \%MAPPING);
+    $MAPPING_FILE_LOADED{$mapping_file} = 1;
 }
 
 while (<STDIN>) {
