@@ -4,14 +4,24 @@ use File::Basename;
 use Getopt::Std;
 my $PROGRAM = basename $0;
 my $USAGE=
-"Usage: $PROGRAM FAA_FILE_1 FAA_FILE_2
+"Usage: $PROGRAM -a [ALIGNER] FAA_FILE_1 FAA_FILE_2
 ";
 
-# my $SEARCH_COMMAND = "mmseqs.pl -s 8.5";
-my $SEARCH_COMMAND = "diamond.pl -f";
-
 my %OPT;
-getopts('', \%OPT);
+getopts('a:', \%OPT);
+
+my $ALIGNER = $OPT{a} || "diamond-f";
+
+my $SEARCH_COMMAND;
+if ($ALIGNER eq "mmseqs-s8.5") {
+    $SEARCH_COMMAND = "mmseqs.pl -s 8.5";
+} elsif ($ALIGNER eq "diamond-f") {
+    $SEARCH_COMMAND = "diamond.pl -f";
+} else {
+    print STDERR "Unsupported aligner: $ALIGNER\n";
+    print STDERR $USAGE;
+    exit 1;
+}
 
 if (!@ARGV) {
     print STDERR $USAGE;
@@ -21,7 +31,7 @@ my ($FILE1, $FILE2) = @ARGV;
 
 my $NAME1 = basename $FILE1;
 my $NAME2 = basename $FILE2;
-my $DIR_NAME = "${NAME1}-${NAME2}";
+my $DIR_NAME = "${NAME1}-${NAME2}.${ALIGNER}";
 my $MAP_TO_GENE_DIR = "geneid_refseq";
 
 my $PWD = `pwd`;
