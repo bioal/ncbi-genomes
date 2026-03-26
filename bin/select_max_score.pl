@@ -27,6 +27,6 @@ while (<>) {
     }
 }
 
-foreach my $key (sort keys %RESULT) {
+foreach my $key (sort { $SCORE{$b} <=> $SCORE{$a} } keys %SCORE) {
     print "$RESULT{$key}\n";
 }
