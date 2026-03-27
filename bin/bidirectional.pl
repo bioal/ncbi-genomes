@@ -50,11 +50,15 @@ homology_search($PATH2, $PATH1);
 homology_search($PATH1, $PATH1);
 homology_search($PATH2, $PATH2);
 
-select_closest_paralog($NAME1);
-select_closest_paralog($NAME2);
+select_paralog($NAME1, $NAME2);
+select_paralog($NAME2, $NAME1);
 
 select_ortholog($NAME1, $NAME2);
 select_ortholog($NAME2, $NAME1);
+
+sum_bit_scores($NAME1, $NAME2);
+
+select_bidirectional_ortholog($NAME1, $NAME2);
 
 close(LOG);
 
@@ -62,20 +66,38 @@ close(LOG);
 ### Functions ##################################################################
 ################################################################################
 
+sub sum_bit_scores {
+    my ($name1, $name2) = @_;
+
+    my $pair = "${name1}-${name2}";
+    if (-s "${name1}.ortholog" and -s "${name2}.ortholog" and ! -s "${pair}.bit_scores") {
+        exec_with_time("sum_bit_scores.pl ${name1}.ortholog ${name2}.ortholog > ${pair}.bit_scores");
+    }
+}
+
+sub select_bidirectional_ortholog {
+    my ($name1, $name2) = @_;
+
+    my $pair = "${name1}-${name2}";
+    if (-s "${name1}.ortholog" and -s "${name2}.ortholog" and ! -s "${pair}.ortholog") {
+        exec_with_time("select_bidirectional_ortholog.pl ${name1}.ortholog ${name2}.ortholog ${name1}-${name2}.bit_scores > ${pair}.ortholog");
+    }
+}
+
 sub select_ortholog {
     my ($name1, $name2) = @_;
 
     my $pair = "${name1}-${name2}";
-    if (-s "${pair}.max_score" and -s "${name1}.closest_paralog" and ! -s "${name1}.ortholog") {
-        exec_with_time("cat ${pair}.max_score | select_ortholog.pl ${name1}.closest_paralog > ${name1}.ortholog");
+    if (-s "${pair}.max_score" and -s "${name1}.paralog" and ! -s "${name1}.ortholog") {
+        exec_with_time("cat ${pair}.max_score | select_ortholog.pl ${name1}.paralog > ${name1}.ortholog");
     }
 }
 
-sub select_closest_paralog {
-    my ($name) = @_;
+sub select_paralog {
+    my ($name1, $name2) = @_;
 
-    if (-s "${name}-${name}.max_score" and ! -s "${name}.closest_paralog") {
-        exec_with_time("cat ${name}-${name}.max_score | select_closest_paralog.pl > ${name}.closest_paralog");
+    if (-s "${name1}-${name1}.max_score" and -s "${name1}-${name2}.max_score" and ! -s "${name1}.paralog") {
+        exec_with_time("cat ${name1}-${name1}.max_score | select_paralog.pl ${name1}-${name2}.max_score > ${name1}.paralog");
     }
 }
 
