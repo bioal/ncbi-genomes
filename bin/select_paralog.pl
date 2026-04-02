@@ -42,16 +42,16 @@ while (<INTRA_SPECIES>) {
         next;  # Skip self-comparisons
     }
     my $cross_species_score = $CROSS_SPECIES_SCORE{$gene1};
-    my $paralogy_score = 100;
+    my $paralogy = 100;
     if ($cross_species_score) {
-        $paralogy_score = $score / $cross_species_score;
+        $paralogy = $score / $cross_species_score;
     }
     if ($PRINTED_GENE_WITH_SCORE{$gene1} &&
         $PRINTED_GENE_WITH_SCORE{$gene1} > $score) {
         next;
     }
-    print $_,  "\t", $paralogy_score, "\n";
-    if ($paralogy_score < 1) {
+    print $_,  "\t", $paralogy, "\n";
+    if ($paralogy < 1) {
         $PRINTED_GENE_WITH_SCORE{$gene1} = $score;
     }
 }
