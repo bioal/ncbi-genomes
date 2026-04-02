@@ -16,8 +16,9 @@ if (@ARGV != 2) {
 }
 my ($HOMOLOG, $PARALOG) = @ARGV;
 
-my %MAX_SCORE;
-my %PARALOG_SCORE;
+my %THRESHOLD_SCORE;
+my %LOWER_THRESHOLD;
+my %PARALOGS;
 open(PARALOG, "$PARALOG") || die "$!";
 while (<PARALOG>) {
     chomp;
@@ -25,11 +26,15 @@ while (<PARALOG>) {
     my $geneid1 = $f[0];
     my $score = $f[11];
     my $paralogy = $f[12];
-    if (!$MAX_SCORE{$geneid1} || $score > $MAX_SCORE{$geneid1}) {
-        $MAX_SCORE{$geneid1} = $score;
+    my $paralogs = $f[13];
+    if (!$THRESHOLD_SCORE{$geneid1} || $score > $THRESHOLD_SCORE{$geneid1}) {
+        $THRESHOLD_SCORE{$geneid1} = $score;
     }
     if ($paralogy <= 1) {
-        $PARALOG_SCORE{$geneid1} = $score;
+        $LOWER_THRESHOLD{$geneid1} = $score;
+    }
+    if ($paralogs) {
+        $PARALOGS{$geneid1} = $paralogs;
     }
 }
 close(PARALOG);
@@ -42,9 +47,16 @@ while (<HOMOLOG>) {
     my $geneid1 = $f[0];
     my $geneid2 = $f[1];
     my $score = $f[11];
-    my $orthology_score = get_orthology_score($score, $MAX_SCORE{$geneid1});
-    my $orthology_score_2 = get_orthology_score($score, $PARALOG_SCORE{$geneid1});
-    print join("\t", @f, $orthology_score, $orthology_score_2), "\n";
+    my $orthology = get_orthology_score($score, $THRESHOLD_SCORE{$geneid1});
+    my $grouped_orthology = get_orthology_score($score, $LOWER_THRESHOLD{$geneid1});
+    print join("\t", @f, $orthology, $grouped_orthology);
+
+    print "\t";
+    if ($PARALOGS{$geneid1}) {
+        print $PARALOGS{$geneid1};
+    }
+
+    print "\n";
 }
 close(HOMOLOG);
 
@@ -53,12 +65,12 @@ close(HOMOLOG);
 ################################################################################
 
 sub get_orthology_score {
-    my ($score, $paralog_score) = @_;
+    my ($score, $threshold_score) = @_;
 
-    my $orthology_score = 1000;
-    if ($paralog_score) {
-        $orthology_score = $score / $paralog_score;
+    my $orthology = 1000;
+    if ($threshold_score) {
+        $orthology = $score / $threshold_score;
     }
 
-    return $orthology_score;
+    return $orthology;
 }
