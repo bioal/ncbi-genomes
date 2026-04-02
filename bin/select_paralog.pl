@@ -50,10 +50,7 @@ while (<INTRA_SPECIES>) {
         $PRINTED_GENE_WITH_SCORE{$gene1} > $score) {
         next;
     }
-    print $_;
-    print "\t";
-    print $paralogy_score;
-    print "\n";
+    print $_,  "\t", $paralogy_score, "\n";
     if ($paralogy_score < 1) {
         $PRINTED_GENE_WITH_SCORE{$gene1} = $score;
     }
