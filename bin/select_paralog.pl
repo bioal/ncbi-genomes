@@ -14,7 +14,7 @@ if (!@ARGV) {
     print STDERR $USAGE;
     exit 1;
 }
-my ($CROSS_SPECIES_SCORE) = @ARGV;
+my ($CROSS_SPECIES_SCORE, $INTRA_SPECIES) = @ARGV;
 
 my %CROSS_SPECIES_SCORE;
 open(CROSS_SPECIES_SCORE, "$CROSS_SPECIES_SCORE") || die "$!";
@@ -30,8 +30,9 @@ while (<CROSS_SPECIES_SCORE>) {
 }
 close(CROSS_SPECIES_SCORE);
 
+open(INTRA_SPECIES, "$INTRA_SPECIES") || die "$!";
 my %PRINTED_GENE_WITH_SCORE;
-while (<STDIN>) {
+while (<INTRA_SPECIES>) {
     chomp;
     my @f = split(/\t/, $_, -1);
     my $gene1 = $f[0];
@@ -57,3 +58,4 @@ while (<STDIN>) {
         $PRINTED_GENE_WITH_SCORE{$gene1} = $score;
     }
 }
+close(INTRA_SPECIES);
