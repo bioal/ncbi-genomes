@@ -80,7 +80,7 @@ sub select_bidirectional_ortholog {
 
     my $pair = "${name1}-${name2}";
     if (-s "${name1}.ortholog" and -s "${name2}.ortholog" and ! -s "${pair}.ortholog") {
-        exec_with_time("select_bidirectional_ortholog.pl ${name1}.ortholog ${name2}.ortholog ${name1}-${name2}.bit_scores > ${pair}.ortholog");
+        exec_with_time("eval_bidirectional.pl ${name1}.ortholog ${name2}.ortholog ${name1}-${name2}.bit_scores > ${pair}.ortholog");
     }
 }
 
