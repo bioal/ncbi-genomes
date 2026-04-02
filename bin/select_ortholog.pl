@@ -4,17 +4,17 @@ use File::Basename;
 use Getopt::Std;
 my $PROGRAM = basename $0;
 my $USAGE=
-"Usage: $PROGRAM PARALOG
+"Usage: $PROGRAM HOMOLOG PARALOG
 ";
 
 my %OPT;
 getopts('', \%OPT);
 
-if (@ARGV != 1) {
+if (@ARGV != 2) {
     print STDERR $USAGE;
     exit 1;
 }
-my ($PARALOG) = @ARGV;
+my ($HOMOLOG, $PARALOG) = @ARGV;
 
 my %MAX_SCORE;
 my %PARALOG_SCORE;
@@ -35,7 +35,8 @@ while (<PARALOG>) {
 close(PARALOG);
 
 my %ORTHOLOG_SCORE;
-while (<STDIN>) {
+open(HOMOLOG, "$HOMOLOG") || die "$!";
+while (<HOMOLOG>) {
     chomp;
     my @f = split(/\t/, $_, -1);
     my $geneid1 = $f[0];
@@ -45,6 +46,7 @@ while (<STDIN>) {
     my $orthology_score_2 = get_orthology_score($score, $PARALOG_SCORE{$geneid1});
     print join("\t", @f, $orthology_score, $orthology_score_2), "\n";
 }
+close(HOMOLOG);
 
 ################################################################################
 ### Function ###################################################################
