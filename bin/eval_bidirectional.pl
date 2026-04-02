@@ -17,9 +17,9 @@ if (@ARGV != 3) {
 }
 my ($HUMAN_MOUSE, $MOUSE_HUMAN, $BIT_SCORES) = @ARGV;
 
-my %HUMAN_MOUSE_BIT_SCORE;
-my %HUMAN_MOUSE_ORTHOLOGY_SCORE;
-my %HUMAN_MOUSE_GROUPED_ORTHOLOGY_SCORE;
+my %BIT_SCORE;
+my %ORTHOLOGY_SCORE;
+my %GROUPED_ORTHOLOGY_SCORE;
 open(HUMAN_MOUSE, "$HUMAN_MOUSE") || die "$!";
 while (<HUMAN_MOUSE>) {
     chomp;
@@ -29,9 +29,9 @@ while (<HUMAN_MOUSE>) {
     my $bit_score = $f[11];
     my $orthology_score = $f[12];
     my $grouped_orthology_score = $f[13];
-    $HUMAN_MOUSE_BIT_SCORE{"${human_gene}\t${mouse_gene}"} = $bit_score;
-    $HUMAN_MOUSE_ORTHOLOGY_SCORE{"${human_gene}\t${mouse_gene}"} = $orthology_score;
-    $HUMAN_MOUSE_GROUPED_ORTHOLOGY_SCORE{"${human_gene}\t${mouse_gene}"} = $grouped_orthology_score;
+    $BIT_SCORE{"${human_gene}\t${mouse_gene}"} = $bit_score;
+    $ORTHOLOGY_SCORE{"${human_gene}\t${mouse_gene}"} = $orthology_score;
+    $GROUPED_ORTHOLOGY_SCORE{"${human_gene}\t${mouse_gene}"} = $grouped_orthology_score;
 }
 close(HUMAN_MOUSE);
 
@@ -51,8 +51,8 @@ while (<MOUSE_HUMAN>) {
     $MOUSE_HUMAN_BIT_SCORE{"${human_gene}\t${mouse_gene}"} = $mouse_human_bit_score;
     $MOUSE_HUMAN_ORTHOLOGY_SCORE{"${human_gene}\t${mouse_gene}"} = $mouse_human_orthology_score;
     $MOUSE_HUMAN_GROUPED_ORTHOLOGY_SCORE{"${human_gene}\t${mouse_gene}"} = $mouse_human_grouped_orthology_score;
-    if ($HUMAN_MOUSE_ORTHOLOGY_SCORE{"${human_gene}\t${mouse_gene}"}) {
-        my $human_mouse_orthology_score = $HUMAN_MOUSE_ORTHOLOGY_SCORE{"${human_gene}\t${mouse_gene}"};
+    if ($ORTHOLOGY_SCORE{"${human_gene}\t${mouse_gene}"}) {
+        my $human_mouse_orthology_score = $ORTHOLOGY_SCORE{"${human_gene}\t${mouse_gene}"};
         $MIN_ORTHOLOGY_SCORE{"${human_gene}\t${mouse_gene}"} = min($human_mouse_orthology_score, $mouse_human_orthology_score);
     }
 }
@@ -75,8 +75,8 @@ while (<BIT_SCORES>) {
 
     if ($MOUSE_HUMAN_BIT_SCORE{$human_mouse} &&
         $MOUSE_HUMAN_ORTHOLOGY_SCORE{$human_mouse} <= 1 &&
-        $HUMAN_MOUSE_BIT_SCORE{$human_mouse} &&
-        $HUMAN_MOUSE_ORTHOLOGY_SCORE{$human_mouse} <= 1 ) {
+        $BIT_SCORE{$human_mouse} &&
+        $ORTHOLOGY_SCORE{$human_mouse} <= 1 ) {
         # print_result($human_gene, $mouse_gene);
         next;
     }
@@ -97,19 +97,19 @@ close(BIT_SCORES);
 sub insufficient_orthology_score {
     my ($human_mouse) = @_;
 
-    if (! $HUMAN_MOUSE_BIT_SCORE{$human_mouse} &&
+    if (! $BIT_SCORE{$human_mouse} &&
           $MOUSE_HUMAN_ORTHOLOGY_SCORE{$human_mouse} <= 1) {
         return 1;
     }
 
     if (! $MOUSE_HUMAN_BIT_SCORE{$human_mouse} &&
-          $HUMAN_MOUSE_ORTHOLOGY_SCORE{$human_mouse} <= 1 ) {
+          $ORTHOLOGY_SCORE{$human_mouse} <= 1 ) {
         return 1;
     }
 
-    if ($HUMAN_MOUSE_ORTHOLOGY_SCORE{$human_mouse}   && $HUMAN_MOUSE_ORTHOLOGY_SCORE{$human_mouse}   <= 1 &&
+    if ($ORTHOLOGY_SCORE{$human_mouse}   && $ORTHOLOGY_SCORE{$human_mouse}   <= 1 &&
         $MOUSE_HUMAN_ORTHOLOGY_SCORE{$human_mouse}   && $MOUSE_HUMAN_ORTHOLOGY_SCORE{$human_mouse}   <= 1 &&
-        $HUMAN_MOUSE_GROUPED_ORTHOLOGY_SCORE{$human_mouse} && $HUMAN_MOUSE_GROUPED_ORTHOLOGY_SCORE{$human_mouse} <= 0.9 &&
+        $GROUPED_ORTHOLOGY_SCORE{$human_mouse} && $GROUPED_ORTHOLOGY_SCORE{$human_mouse} <= 0.9 &&
         $MOUSE_HUMAN_GROUPED_ORTHOLOGY_SCORE{$human_mouse} && $MOUSE_HUMAN_GROUPED_ORTHOLOGY_SCORE{$human_mouse} <= 0.9
         ) {
         return 1;
@@ -123,14 +123,14 @@ sub print_result {
     print join("\t",
                $human_gene,
                $mouse_gene,
-               $HUMAN_MOUSE_BIT_SCORE{$human_mouse} || 0,
+               $BIT_SCORE{$human_mouse} || 0,
                $MOUSE_HUMAN_BIT_SCORE{$human_mouse} || 0,
-               $HUMAN_MOUSE_ORTHOLOGY_SCORE{$human_mouse} || 0,
+               $ORTHOLOGY_SCORE{$human_mouse} || 0,
                $MOUSE_HUMAN_ORTHOLOGY_SCORE{$human_mouse} || 0,
                $MIN_ORTHOLOGY_SCORE{$human_mouse} || 0,
-               $HUMAN_MOUSE_GROUPED_ORTHOLOGY_SCORE{$human_mouse} || 0,
+               $GROUPED_ORTHOLOGY_SCORE{$human_mouse} || 0,
                $MOUSE_HUMAN_GROUPED_ORTHOLOGY_SCORE{$human_mouse} || 0,
-               min($HUMAN_MOUSE_GROUPED_ORTHOLOGY_SCORE{$human_mouse} || 0, $MOUSE_HUMAN_GROUPED_ORTHOLOGY_SCORE{$human_mouse} || 0)
+               min($GROUPED_ORTHOLOGY_SCORE{$human_mouse} || 0, $MOUSE_HUMAN_GROUPED_ORTHOLOGY_SCORE{$human_mouse} || 0)
         ), "\n";
 }
 
