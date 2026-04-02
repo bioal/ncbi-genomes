@@ -97,7 +97,7 @@ sub select_paralog {
     my ($name1, $name2) = @_;
 
     if (-s "${name1}-${name1}.max_score" and -s "${name1}-${name2}.max_score" and ! -s "${name1}.paralog") {
-        exec_with_time("cat ${name1}-${name1}.max_score | select_paralog.pl ${name1}-${name2}.max_score > ${name1}.paralog");
+        exec_with_time("select_paralog.pl ${name1}-${name1}.max_score ${name1}-${name2}.max_score > ${name1}.paralog");
     }
 }
 
