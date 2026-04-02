@@ -89,7 +89,7 @@ sub select_ortholog {
 
     my $pair = "${name1}-${name2}";
     if (-s "${pair}.max_score" and -s "${name1}.paralog" and ! -s "${name1}.ortholog") {
-        exec_with_time("cat ${pair}.max_score | select_ortholog.pl ${name1}.paralog > ${name1}.ortholog");
+        exec_with_time("select_ortholog.pl ${pair}.max_score ${name1}.paralog > ${name1}.ortholog");
     }
 }
 
