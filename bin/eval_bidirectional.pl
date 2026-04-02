@@ -45,15 +45,15 @@ while (<MOUSE_HUMAN>) {
     my @f = split(/\t/, $_, -1);
     my $mouse_gene = $f[0];
     my $human_gene = $f[1];
-    my $mouse_human_bit_score = $f[11];
-    my $mouse_human_orthology = $f[12];
-    my $mouse_human_grouped_orthology = $f[13];
-    $REVERSE_BIT_SCORE{"${human_gene}\t${mouse_gene}"} = $mouse_human_bit_score;
-    $REVERSE_ORTHOLOGY{"${human_gene}\t${mouse_gene}"} = $mouse_human_orthology;
-    $REVERSE_GROUPED_ORTHOLOGY{"${human_gene}\t${mouse_gene}"} = $mouse_human_grouped_orthology;
+    my $bit_score = $f[11];
+    my $orthology = $f[12];
+    my $grouped_orthology = $f[13];
+    $REVERSE_BIT_SCORE{"${human_gene}\t${mouse_gene}"} = $bit_score;
+    $REVERSE_ORTHOLOGY{"${human_gene}\t${mouse_gene}"} = $orthology;
+    $REVERSE_GROUPED_ORTHOLOGY{"${human_gene}\t${mouse_gene}"} = $grouped_orthology;
     if ($ORTHOLOGY{"${human_gene}\t${mouse_gene}"}) {
         my $human_mouse_orthology = $ORTHOLOGY{"${human_gene}\t${mouse_gene}"};
-        $MIN_ORTHOLOGY{"${human_gene}\t${mouse_gene}"} = min($human_mouse_orthology, $mouse_human_orthology);
+        $MIN_ORTHOLOGY{"${human_gene}\t${mouse_gene}"} = min($human_mouse_orthology, $orthology);
     }
 }
 close(MOUSE_HUMAN);
