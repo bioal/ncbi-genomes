@@ -16,14 +16,21 @@ if (@ARGV != 1) {
 }
 my ($PARALOG) = @ARGV;
 
+my %MAX_SCORE;
 my %PARALOG_SCORE;
 open(PARALOG, "$PARALOG") || die "$!";
 while (<PARALOG>) {
     chomp;
     my @f = split(/\t/, $_, -1);
     my $geneid1 = $f[0];
-    my $score = $f[-1];
-    $PARALOG_SCORE{$geneid1} = $score;
+    my $score = $f[11];
+    my $paralogy = $f[12];
+    if (!$MAX_SCORE{$geneid1} || $score > $MAX_SCORE{$geneid1}) {
+        $MAX_SCORE{$geneid1} = $score;
+    }
+    if ($paralogy <= 1) {
+        $PARALOG_SCORE{$geneid1} = $score;
+    }
 }
 close(PARALOG);
 
@@ -33,14 +40,23 @@ while (<STDIN>) {
     my @f = split(/\t/, $_, -1);
     my $geneid1 = $f[0];
     my $geneid2 = $f[1];
-    my $score = $f[-1];
-    my $ortholog_score = 1000;
-    if ($PARALOG_SCORE{$geneid1}) {
-        if ($score > $PARALOG_SCORE{$geneid1}) {
-            $ortholog_score = $score / $PARALOG_SCORE{$geneid1};
-        } else {
-            next;
-        }
+    my $score = $f[11];
+    my $orthology_score = get_orthology_score($score, $MAX_SCORE{$geneid1});
+    my $orthology_score_2 = get_orthology_score($score, $PARALOG_SCORE{$geneid1});
+    print join("\t", @f, $orthology_score, $orthology_score_2), "\n";
+}
+
+################################################################################
+### Function ###################################################################
+################################################################################
+
+sub get_orthology_score {
+    my ($score, $paralog_score) = @_;
+
+    my $orthology_score = 1000;
+    if ($paralog_score) {
+        $orthology_score = $score / $paralog_score;
     }
-    print join("\t", @f, $ortholog_score), "\n";
+
+    return $orthology_score;
 }
