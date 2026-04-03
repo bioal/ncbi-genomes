@@ -25,10 +25,10 @@ while (<STDIN>) {
     my @f = split(/\t/, $_, -1);
     my $gene1 = $f[0];
     my $gene2 = $f[1];
-    my $symbol1 = $INFO{symbol}{$gene1} || die "No symbol for $gene1";
-    my $symbol2 = $INFO{symbol}{$gene2} || die "No symbol for $gene2";
-    my $type1 = $INFO{type}{$gene1} || die "No type for $gene1";
-    my $type2 = $INFO{type}{$gene2} || die "No type for $gene2";
+    my $symbol1 = get_symbols($gene1, $INFO{symbol});
+    my $symbol2 = get_symbols($gene2, $INFO{symbol});
+    my $type1 = $INFO{type}{$gene1} || 0;
+    my $type2 = $INFO{type}{$gene2} || 0;
     
     if ($OPT{p}) {
         if ($type1 ne "protein-coding" || $type2 ne "protein-coding") {
@@ -73,4 +73,20 @@ sub read_gene_info {
     close(FILE);
 
     return 0;
+}
+
+sub get_symbols {
+    my ($genes, $r_hash) = @_;
+
+    my @symbols;
+    foreach my $gene (split(/,/, $genes)) {
+        if (${$r_hash}{$gene}) {
+            push(@symbols, ${$r_hash}{$gene});
+        }
+    }
+    if (@symbols == 0) {
+        return 0;
+    } else {
+        return join(",", @symbols);
+    }
 }
