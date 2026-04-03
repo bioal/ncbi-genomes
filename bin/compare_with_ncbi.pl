@@ -20,10 +20,8 @@ while (<STDIN>) {
     my @f = split(/\t/, $_, -1);
     my $gene1 = $f[0];
     my $gene2 = $f[1];
-    print $_;
     my $comparison = eval_results(\%HASH, $gene1, $gene2);
-    print "\t$comparison";
-    print "\n";
+    print $_, "\t", $comparison, "\n";
 }
 
 ################################################################################
