@@ -67,11 +67,10 @@ while (<BIT_SCORES>) {
     my @f = split(/\t/, $_, -1);
     my $human_gene = $f[0];
     my $mouse_gene = $f[1];
-    if (! sufficient_orthology($human_gene, $mouse_gene)) {
-        next;
-    }
-    if (! $OPT{s}) {
-        print_result($human_gene, $mouse_gene);
+    if (sufficient_orthology($human_gene, $mouse_gene)) {
+        if (! $OPT{s}) {
+            print_result($human_gene, $mouse_gene);
+        }
     }
 }
 close(BIT_SCORES);
