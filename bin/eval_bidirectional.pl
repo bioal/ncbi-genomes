@@ -79,14 +79,6 @@ while (<BIT_SCORES>) {
     }
     my $human_mouse = "${human_gene}\t${mouse_gene}";
 
-    if ($REVERSE_BIT_SCORE{$human_mouse} &&
-        $REVERSE_ORTHOLOGY{$human_mouse} <= 1 &&
-        $BIT_SCORE{$human_mouse} &&
-        $ORTHOLOGY{$human_mouse} <= 1 ) {
-        # print_result($human_gene, $mouse_gene);
-        next;
-    }
-
     if (insufficient_orthology($human_mouse)) {
         next;
     }
@@ -103,16 +95,25 @@ close(BIT_SCORES);
 sub insufficient_orthology {
     my ($human_mouse) = @_;
 
+    # hit exists in both directions, but both have orthology <= 1
+    if ($REVERSE_BIT_SCORE{$human_mouse} &&
+        $REVERSE_ORTHOLOGY{$human_mouse} <= 1 &&
+        $BIT_SCORE{$human_mouse} &&
+        $ORTHOLOGY{$human_mouse} <= 1 ) {
+        return 1;
+    }
+
+    # hit does not exist in one direction, and the other direction has orthology <= 1
     if (! $BIT_SCORE{$human_mouse} &&
           $REVERSE_ORTHOLOGY{$human_mouse} <= 1) {
         return 1;
     }
-
     if (! $REVERSE_BIT_SCORE{$human_mouse} &&
           $ORTHOLOGY{$human_mouse} <= 1 ) {
         return 1;
     }
 
+    # hit exists in both directions, but both have orthology <= 1 and grouped orthology <= 0.9
     if ($ORTHOLOGY{$human_mouse}   && $ORTHOLOGY{$human_mouse}   <= 1 &&
         $REVERSE_ORTHOLOGY{$human_mouse}   && $REVERSE_ORTHOLOGY{$human_mouse}   <= 1 &&
         $GROUPED_ORTHOLOGY{$human_mouse} && $GROUPED_ORTHOLOGY{$human_mouse} <= 0.9 &&
