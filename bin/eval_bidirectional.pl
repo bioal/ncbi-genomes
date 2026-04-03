@@ -99,10 +99,8 @@ sub insufficient_orthology {
     my $human_mouse = "${human_gene}\t${mouse_gene}";
 
     # hit exists in both directions, but both have orthology <= 1
-    if ($REVERSE_BIT_SCORE{$human_mouse} &&
-        $REVERSE_ORTHOLOGY{$human_mouse} <= 1 &&
-        $BIT_SCORE{$human_mouse} &&
-        $ORTHOLOGY{$human_mouse} <= 1 ) {
+    if ($ORTHOLOGY{$human_mouse}         && $ORTHOLOGY{$human_mouse}         <= 1 &&
+        $REVERSE_ORTHOLOGY{$human_mouse} && $REVERSE_ORTHOLOGY{$human_mouse} <= 1 ) {
         return 1;
     }
 
@@ -116,14 +114,6 @@ sub insufficient_orthology {
         return 1;
     }
 
-    # hit exists in both directions, but both have orthology <= 1 and grouped orthology <= 0.9
-    if ($ORTHOLOGY{$human_mouse}                 && $ORTHOLOGY{$human_mouse}                 <= 1   &&
-        $REVERSE_ORTHOLOGY{$human_mouse}         && $REVERSE_ORTHOLOGY{$human_mouse}         <= 1   &&
-        $GROUPED_ORTHOLOGY{$human_mouse}         && $GROUPED_ORTHOLOGY{$human_mouse}         <= 0.9 &&
-        $REVERSE_GROUPED_ORTHOLOGY{$human_mouse} && $REVERSE_GROUPED_ORTHOLOGY{$human_mouse} <= 0.9
-        ) {
-        return 1;
-    }
     return 0;
 }
 
