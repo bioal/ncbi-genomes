@@ -6,10 +6,11 @@ my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM
 -a: output all pairs, not just bidirectional best hits
+-s: silent mode for testing
 ";
 
 my %OPT;
-getopts('a', \%OPT);
+getopts('as', \%OPT);
 
 if (@ARGV != 3) {
     print STDERR $USAGE;
@@ -82,7 +83,9 @@ while (<BIT_SCORES>) {
     if (insufficient_orthology($human_mouse)) {
         next;
     }
-    print_result($human_gene, $mouse_gene);
+    if (! $OPT{s}) {
+        print_result($human_gene, $mouse_gene);
+    }
     $HUMAN_GENE_PRINTED{$human_gene} = 1;
     $MOUSE_GENE_PRINTED{$mouse_gene} = 1;
 }
