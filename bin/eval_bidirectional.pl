@@ -43,7 +43,6 @@ my %REVERSE_BIT_SCORE;
 my %REVERSE_ORTHOLOGY;
 my %REVERSE_PARALOGS;
 my %REVERSE_GROUPED_ORTHOLOGY;
-my %MIN_ORTHOLOGY;
 open(MOUSE_HUMAN, "$MOUSE_HUMAN") || die "$!";
 while (<MOUSE_HUMAN>) {
     chomp;
@@ -58,10 +57,6 @@ while (<MOUSE_HUMAN>) {
     $REVERSE_ORTHOLOGY{"${human_gene}\t${mouse_gene}"} = $orthology;
     $REVERSE_GROUPED_ORTHOLOGY{"${human_gene}\t${mouse_gene}"} = $grouped_orthology;
     $REVERSE_PARALOGS{"${human_gene}\t${mouse_gene}"} = $paralogs;
-    if ($ORTHOLOGY{"${human_gene}\t${mouse_gene}"}) {
-        my $human_mouse_orthology = $ORTHOLOGY{"${human_gene}\t${mouse_gene}"};
-        $MIN_ORTHOLOGY{"${human_gene}\t${mouse_gene}"} = min($human_mouse_orthology, $orthology);
-    }
 }
 close(MOUSE_HUMAN);
 
@@ -122,7 +117,7 @@ sub print_result {
                $REVERSE_BIT_SCORE{$human_mouse} || 0,
                $ORTHOLOGY{$human_mouse} || 0,
                $REVERSE_ORTHOLOGY{$human_mouse} || 0,
-               $MIN_ORTHOLOGY{$human_mouse} || 0,
+               min($ORTHOLOGY{$human_mouse} || 0, $REVERSE_ORTHOLOGY{$human_mouse} || 0),
                $GROUPED_ORTHOLOGY{$human_mouse} || 0,
                $REVERSE_GROUPED_ORTHOLOGY{$human_mouse} || 0,
                min($GROUPED_ORTHOLOGY{$human_mouse} || 0, $REVERSE_GROUPED_ORTHOLOGY{$human_mouse} || 0)
