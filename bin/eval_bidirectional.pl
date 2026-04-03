@@ -79,7 +79,7 @@ while (<BIT_SCORES>) {
         }
     }
 
-    if (insufficient_orthology($human_gene, $mouse_gene)) {
+    if (! sufficient_orthology($human_gene, $mouse_gene)) {
         next;
     }
     if (! $OPT{s}) {
@@ -94,23 +94,12 @@ close(BIT_SCORES);
 ### Function ###################################################################
 ################################################################################
 
-sub insufficient_orthology {
+sub sufficient_orthology {
     my ($human_gene, $mouse_gene) = @_;
+
     my $human_mouse = "${human_gene}\t${mouse_gene}";
-
-    # hit exists in both directions, but both have orthology <= 1
-    if ($ORTHOLOGY{$human_mouse}         && $ORTHOLOGY{$human_mouse}         <= 1 &&
-        $REVERSE_ORTHOLOGY{$human_mouse} && $REVERSE_ORTHOLOGY{$human_mouse} <= 1 ) {
-        return 1;
-    }
-
-    # hit does not exist in one direction, and the other direction has orthology <= 1
-    if (! $BIT_SCORE{$human_mouse} &&
-          $REVERSE_ORTHOLOGY{$human_mouse} <= 1) {
-        return 1;
-    }
-    if (! $REVERSE_BIT_SCORE{$human_mouse} &&
-          $ORTHOLOGY{$human_mouse} <= 1 ) {
+    if ($ORTHOLOGY{$human_mouse}         && $ORTHOLOGY{$human_mouse}         > 1 ||
+        $REVERSE_ORTHOLOGY{$human_mouse} && $REVERSE_ORTHOLOGY{$human_mouse} > 1) {
         return 1;
     }
 
