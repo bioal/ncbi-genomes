@@ -117,9 +117,9 @@ sub insufficient_orthology {
     }
 
     # hit exists in both directions, but both have orthology <= 1 and grouped orthology <= 0.9
-    if ($ORTHOLOGY{$human_mouse}   && $ORTHOLOGY{$human_mouse}   <= 1 &&
-        $REVERSE_ORTHOLOGY{$human_mouse}   && $REVERSE_ORTHOLOGY{$human_mouse}   <= 1 &&
-        $GROUPED_ORTHOLOGY{$human_mouse} && $GROUPED_ORTHOLOGY{$human_mouse} <= 0.9 &&
+    if ($ORTHOLOGY{$human_mouse}                 && $ORTHOLOGY{$human_mouse}                 <= 1   &&
+        $REVERSE_ORTHOLOGY{$human_mouse}         && $REVERSE_ORTHOLOGY{$human_mouse}         <= 1   &&
+        $GROUPED_ORTHOLOGY{$human_mouse}         && $GROUPED_ORTHOLOGY{$human_mouse}         <= 0.9 &&
         $REVERSE_GROUPED_ORTHOLOGY{$human_mouse} && $REVERSE_GROUPED_ORTHOLOGY{$human_mouse} <= 0.9
         ) {
         return 1;
