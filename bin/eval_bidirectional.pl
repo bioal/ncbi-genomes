@@ -5,12 +5,11 @@ use Getopt::Std;
 my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM
--a: output all pairs, not just bidirectional best hits
 -s: silent mode for testing
 ";
 
 my %OPT;
-getopts('as', \%OPT);
+getopts('s', \%OPT);
 
 if (@ARGV != 3) {
     print STDERR $USAGE;
@@ -68,12 +67,6 @@ while (<BIT_SCORES>) {
     my @f = split(/\t/, $_, -1);
     my $human_gene = $f[0];
     my $mouse_gene = $f[1];
-    if (!$OPT{a}) {
-        if ($HUMAN_GENE_PRINTED{$human_gene} || $MOUSE_GENE_PRINTED{$mouse_gene}) {
-            next;
-        }
-    }
-
     if (! sufficient_orthology($human_gene, $mouse_gene)) {
         next;
     }
