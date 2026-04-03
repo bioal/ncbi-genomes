@@ -5,10 +5,11 @@ use Getopt::Std;
 my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM
+-f: output only false
 ";
 
 my %OPT;
-getopts('', \%OPT);
+getopts('f', \%OPT);
 
 my %HASH;
 read_file(
@@ -21,7 +22,13 @@ while (<STDIN>) {
     my $gene1 = $f[0];
     my $gene2 = $f[1];
     my $comparison = eval_results(\%HASH, $gene1, $gene2);
-    print $_, "\t", $comparison, "\n";
+    if ($OPT{f}) {
+        if ($comparison eq "false") {
+            print $_, "\n";
+        }
+    } else {
+        print $_, "\t", $comparison, "\n";
+    }
 }
 
 ################################################################################
