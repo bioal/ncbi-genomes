@@ -80,8 +80,6 @@ while (<BIT_SCORES>) {
     if (! $OPT{s}) {
         print_result($human_gene, $mouse_gene);
     }
-    $HUMAN_GENE_PRINTED{$human_gene} = 1;
-    $MOUSE_GENE_PRINTED{$mouse_gene} = 1;
 }
 close(BIT_SCORES);
 
@@ -103,12 +101,19 @@ sub sufficient_orthology {
 
 sub print_result {
     my ($human_gene, $mouse_gene) = @_;
+
     my $human_mouse = "${human_gene}\t${mouse_gene}";
     if ($PARALOGS{$human_mouse}) {
         $human_gene .= "," . $PARALOGS{$human_mouse};
     }
     if ($REVERSE_PARALOGS{$human_mouse}) {
         $mouse_gene .= "," . $REVERSE_PARALOGS{$human_mouse};
+    }
+    if (includes_printed_genes($human_gene, \%HUMAN_GENE_PRINTED)) {
+        return;
+    }
+    if (includes_printed_genes($mouse_gene, \%MOUSE_GENE_PRINTED)) {
+        return;
     }
     print join("\t",
                $human_gene,
@@ -122,6 +127,29 @@ sub print_result {
                $REVERSE_GROUPED_ORTHOLOGY{$human_mouse} || 0,
                min($GROUPED_ORTHOLOGY{$human_mouse} || 0, $REVERSE_GROUPED_ORTHOLOGY{$human_mouse} || 0)
         ), "\n";
+    remeber_printed_genes($human_gene, \%HUMAN_GENE_PRINTED);
+    remeber_printed_genes($mouse_gene, \%MOUSE_GENE_PRINTED);
+}
+
+sub includes_printed_genes {
+    my ($genes, $r_hash) = @_;
+
+    my @genes = split(/,/, $genes);
+    foreach my $gene (@genes) {
+        if ($r_hash->{$gene}) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+sub remeber_printed_genes {
+    my ($genes, $r_hash) = @_;
+
+    my @genes = split(/,/, $genes);
+    foreach my $gene (@genes) {
+        $r_hash->{$gene} = 1;
+    }
 }
 
 sub min {
