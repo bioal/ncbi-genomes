@@ -30,6 +30,9 @@ if (!@ARGV) {
 }
 my ($FILE1, $FILE2) = @ARGV;
 
+my $DATE_TIME = `date "+%F %T"`;
+chomp($DATE_TIME);
+
 my $NAME1 = basename $FILE1;
 my $NAME2 = basename $FILE2;
 my $DIR_NAME = "${NAME1}-${NAME2}.${ALIGNER}";
@@ -44,7 +47,8 @@ mkdir_with_check("$DIR_NAME");
 chdir $DIR_NAME or die "Cannot change directory to $DIR_NAME: $!";
 
 my $LOG_FILE_PATH = "$PWD/$DIR_NAME/log";
-open(LOG, '>', $LOG_FILE_PATH) or die "Cannot open log file $LOG_FILE_PATH: $!";
+open(LOG, '>>', $LOG_FILE_PATH) or die "Cannot open log file $LOG_FILE_PATH: $!";
+print LOG "[$DATE_TIME] Starting pipeline for $NAME1 and $NAME2 with $ALIGNER\n";
 
 homology_search($PATH1, $PATH2);
 homology_search($PATH2, $PATH1);
@@ -115,7 +119,7 @@ sub homology_search {
         exec_with_time("cat ${pair}.tsv | map_to_gene.pl $PWD/$MAP_TO_GENE_DIR/$name1 $PWD/$MAP_TO_GENE_DIR/$name2 > ${pair}.map_to_gene 2> ${pair}.map_to_gene.err")
     }
     if (-s "${pair}.map_to_gene" and ! -s "${pair}.homolog") {
-        exec_with_time("cat ${pair}.map_to_gene | select_homolog.pl > ${pair}.homolog")
+        exec_with_time("cat ${pair}.map_to_gene | select_max_score.pl > ${pair}.homolog")
     }
 }
 
