@@ -71,6 +71,40 @@ close(LOG);
 ### Functions ##################################################################
 ################################################################################
 
+sub homology_search {
+    my ($path1, $path2) = @_;
+
+    my $name1 = basename $path1;
+    my $name2 = basename $path2;
+    my $pair = "${name1}-${name2}";
+    if (! -s "${pair}.tsv") {
+        exec_with_time("$SEARCH_COMMAND $path1 $path2");
+    }
+    if (-s "${pair}.tsv" and ! -s "${pair}.map_to_gene") {
+        exec_with_time("cat ${pair}.tsv | map_to_gene.pl $PWD/$MAP_TO_GENE_DIR/$name1 $PWD/$MAP_TO_GENE_DIR/$name2 > ${pair}.map_to_gene 2> ${pair}.map_to_gene.err")
+    }
+    if (-s "${pair}.map_to_gene" and ! -s "${pair}.homolog") {
+        exec_with_time("cat ${pair}.map_to_gene | select_max_score.pl > ${pair}.homolog")
+    }
+}
+
+sub select_paralog {
+    my ($name1, $name2) = @_;
+
+    if (-s "${name1}-${name1}.homolog" and -s "${name1}-${name2}.homolog" and ! -s "${name1}.paralog") {
+        exec_with_time("select_paralog.pl ${name1}-${name1}.homolog ${name1}-${name2}.homolog > ${name1}.paralog");
+    }
+}
+
+sub select_ortholog {
+    my ($name1, $name2) = @_;
+
+    my $pair = "${name1}-${name2}";
+    if (-s "${pair}.homolog" and -s "${name1}.paralog" and ! -s "${name1}.ortholog") {
+        exec_with_time("select_ortholog.pl ${pair}.homolog ${name1}.paralog > ${name1}.ortholog");
+    }
+}
+
 sub sum_bit_scores {
     my ($name1, $name2) = @_;
 
@@ -86,40 +120,6 @@ sub select_bidirectional_ortholog {
     my $pair = "${name1}-${name2}";
     if (-s "${name1}.ortholog" and -s "${name2}.ortholog" and ! -s "${pair}.ortholog") {
         exec_with_time("eval_bidirectional.pl ${name1}.ortholog ${name2}.ortholog ${name1}-${name2}.bit_scores > ${pair}.ortholog");
-    }
-}
-
-sub select_ortholog {
-    my ($name1, $name2) = @_;
-
-    my $pair = "${name1}-${name2}";
-    if (-s "${pair}.homolog" and -s "${name1}.paralog" and ! -s "${name1}.ortholog") {
-        exec_with_time("select_ortholog.pl ${pair}.homolog ${name1}.paralog > ${name1}.ortholog");
-    }
-}
-
-sub select_paralog {
-    my ($name1, $name2) = @_;
-
-    if (-s "${name1}-${name1}.homolog" and -s "${name1}-${name2}.homolog" and ! -s "${name1}.paralog") {
-        exec_with_time("select_paralog.pl ${name1}-${name1}.homolog ${name1}-${name2}.homolog > ${name1}.paralog");
-    }
-}
-
-sub homology_search {
-    my ($path1, $path2) = @_;
-
-    my $name1 = basename $path1;
-    my $name2 = basename $path2;
-    my $pair = "${name1}-${name2}";
-    if (! -s "${pair}.tsv") {
-        exec_with_time("$SEARCH_COMMAND $path1 $path2");
-    }
-    if (-s "${pair}.tsv" and ! -s "${pair}.map_to_gene") {
-        exec_with_time("cat ${pair}.tsv | map_to_gene.pl $PWD/$MAP_TO_GENE_DIR/$name1 $PWD/$MAP_TO_GENE_DIR/$name2 > ${pair}.map_to_gene 2> ${pair}.map_to_gene.err")
-    }
-    if (-s "${pair}.map_to_gene" and ! -s "${pair}.homolog") {
-        exec_with_time("cat ${pair}.map_to_gene | select_max_score.pl > ${pair}.homolog")
     }
 }
 
