@@ -11,17 +11,17 @@ my $USAGE=
 my %OPT;
 getopts('f', \%OPT);
 
-my %HASH;
-read_file(
-    "/home/chiba/github/hchiba1/human-mouse/ncbi_orthologs/human-mouse.2026-04-02",
-    \%HASH);
+
+my $REFERENCE = "/home/chiba/github/hchiba1/human-mouse/ncbi_orthologs/human-mouse.2026-04-02";
+my %REF;
+read_file($REFERENCE, \%REF);
 
 while (<STDIN>) {
     chomp;
     my @f = split(/\t/, $_, -1);
     my $gene1 = $f[0];
     my $gene2 = $f[1];
-    my $comparison = eval_results(\%HASH, $gene1, $gene2);
+    my $comparison = eval_results(\%REF, $gene1, $gene2);
     if ($OPT{f}) {
         if ($comparison eq "false") {
             print $_, "\n";
