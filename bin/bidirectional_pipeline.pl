@@ -4,7 +4,8 @@ use File::Basename;
 use Getopt::Std;
 my $PROGRAM = basename $0;
 my $USAGE=
-"Usage: $PROGRAM -a [ALIGNER] FAA_FILE_1 FAA_FILE_2
+"Usage: $PROGRAM [-a ALIGNER] FAA_FILE_1 FAA_FILE_2
+-a ALIGNER: mmseqs-s8.5 or diamond-f (default)
 ";
 
 my %OPT;
