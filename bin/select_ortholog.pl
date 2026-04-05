@@ -50,10 +50,8 @@ while (<HOMOLOG>) {
     my $score = $f[11];
     my $orthology = get_orthology_score($score, $THRESHOLD_SCORE{$geneid1});
     my $grouped_orthology = get_orthology_score($score, $LOWER_THRESHOLD{$geneid1});
-    print join("\t", @f, $orthology, $grouped_orthology);
-
-    print "\t";
-    print_paralogs($geneid1);
+    my $paralogs = get_paralogs($geneid1);
+    print join("\t", @f, $orthology, $grouped_orthology, $paralogs);
     print "\n";
 }
 close(HOMOLOG);
@@ -61,13 +59,12 @@ close(HOMOLOG);
 ################################################################################
 ### Function ###################################################################
 ################################################################################
-sub print_paralogs {
+sub get_paralogs {
     my ($geneid1) = @_;
 
     my @paralogs = sort { $a <=> $b } keys %{$PARALOGS{$geneid1}};
-    if (@paralogs) {
-        print join(",", @paralogs);
-    }
+
+    return join(",", @paralogs);
 }
 
 sub get_orthology_score {
