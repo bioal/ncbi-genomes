@@ -32,7 +32,6 @@ close(CROSS_SPECIES_SCORE);
 
 open(INTRA_SPECIES, "$INTRA_SPECIES") || die "$!";
 my %THRESHOLD;
-my %PARALOG;
 while (<INTRA_SPECIES>) {
     chomp;
     my @f = split(/\t/, $_, -1);
@@ -51,28 +50,10 @@ while (<INTRA_SPECIES>) {
         $THRESHOLD{$gene1} > $score) {
         next;
     }
-    if (! defined $PARALOG{$gene1}) {
-        $PARALOG{$gene1} = "";
-    }
-    if ($paralogy >= 1) {
-        if ($PARALOG{$gene1}) {
-            $PARALOG{$gene1} .= ",$gene2";
-        } else {
-            $PARALOG{$gene1} = $gene2;
-        }
-    }
     if ($paralogy < 1) {
         $THRESHOLD{$gene1} = $score;
     }
     print $_,  "\t", $paralogy;
-
-    print "\t";
-    if ($paralogy < 1) {
-        print $PARALOG{$gene1};
-    } else {
-        print "";
-    }
-
     print "\n";
 }
 close(INTRA_SPECIES);
