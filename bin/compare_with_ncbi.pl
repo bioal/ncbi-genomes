@@ -6,10 +6,11 @@ my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM
 -f: output only false
+-t: output only true
 ";
 
 my %OPT;
-getopts('f', \%OPT);
+getopts('ft', \%OPT);
 
 
 my $REFERENCE = "/home/chiba/github/hchiba1/human-mouse/ncbi_orthologs/human-mouse.2026-04-02";
@@ -24,6 +25,10 @@ while (<STDIN>) {
     my $comparison = eval_results(\%REF, $gene1, $gene2);
     if ($OPT{f}) {
         if ($comparison eq "false") {
+            print $_, "\n";
+        }
+    } elsif ($OPT{t}) {
+        if ($comparison eq "true") {
             print $_, "\n";
         }
     } else {
