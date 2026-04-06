@@ -38,18 +38,21 @@ while (<INTRA_SPECIES>) {
     my $gene1 = $f[0];
     my $gene2 = $f[1];
     my $score = $f[-1];
+
     if ($gene1 eq $gene2) {
         next;  # Skip self-comparisons
     }
     if ($THRESHOLD{$gene1} && $THRESHOLD{$gene1} > $score) {
         next; # Skip lower scores
     }
-    my $cross_species_score = $CROSS_SPECIES_SCORE{$gene1};
+
     my $paralogy = 100;
+    my $cross_species_score = $CROSS_SPECIES_SCORE{$gene1};
     if ($cross_species_score) {
         $paralogy = $score / $cross_species_score;
     }
     print $_,  "\t", $paralogy, "\n";
+
     if ($paralogy < 1) {
         $THRESHOLD{$gene1} = $score;
     }
