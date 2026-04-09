@@ -15,7 +15,7 @@ getopts('ft', \%OPT);
 
 my $REFERENCE = "/home/chiba/github/hchiba1/human-mouse/ncbi_orthologs/human-mouse.2026-04-02";
 my %REF;
-read_file($REFERENCE, \%REF);
+read_reference($REFERENCE, \%REF);
 
 while (<STDIN>) {
     chomp;
@@ -54,7 +54,7 @@ sub eval_results {
     return "false";
 }
 
-sub read_file {
+sub read_reference {
     my ($file, $r_hash) = @_;
 
     open(FILE, "$file") || die "$!";
