@@ -95,17 +95,6 @@ sub select_ortholog {
     }
 }
 
-sum_bit_scores($NAME1, $NAME2);
-
-sub sum_bit_scores {
-    my ($name1, $name2) = @_;
-
-    my $pair = "${name1}-${name2}";
-    if (-s "${name1}.ortholog" and -s "${name2}.ortholog" and ! -s "${pair}.bit_scores") {
-        exec_with_time("sum_bit_scores.pl ${name1}.ortholog ${name2}.ortholog > ${pair}.bit_scores");
-    }
-}
-
 select_bidirectional_ortholog($NAME1, $NAME2);
 
 sub select_bidirectional_ortholog {
@@ -113,7 +102,7 @@ sub select_bidirectional_ortholog {
 
     my $pair = "${name1}-${name2}";
     if (-s "${name1}.ortholog" and -s "${name2}.ortholog" and ! -s "${pair}.ortholog") {
-        exec_with_time("eval_bidirectional.pl ${name1}.ortholog ${name2}.ortholog ${name1}-${name2}.bit_scores > ${pair}.ortholog");
+        exec_with_time("eval_bidirectional.pl ${name1}.ortholog ${name2}.ortholog > ${pair}.ortholog");
     }
 }
 
