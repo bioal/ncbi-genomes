@@ -11,12 +11,13 @@ my $USAGE=
 my %OPT;
 getopts('s', \%OPT);
 
-if (@ARGV != 3) {
+if (@ARGV != 2) {
     print STDERR $USAGE;
     exit 1;
 }
-my ($HUMAN_MOUSE, $MOUSE_HUMAN, $BIT_SCORES) = @ARGV;
+my ($HUMAN_MOUSE, $MOUSE_HUMAN) = @ARGV;
 
+my %MEAN_BIT_SCORE;
 my %BIT_SCORE;
 my %ORTHOLOGY;
 my %PARALOGS;
@@ -31,6 +32,7 @@ while (<HUMAN_MOUSE>) {
     my $orthology = $f[12];
     my $grouped_orthology = $f[13];
     my $paralogs = $f[14];
+    $MEAN_BIT_SCORE{"${human_gene}\t${mouse_gene}"} = $bit_score;
     $BIT_SCORE{"${human_gene}\t${mouse_gene}"} = $bit_score;
     $ORTHOLOGY{"${human_gene}\t${mouse_gene}"} = $orthology;
     $GROUPED_ORTHOLOGY{"${human_gene}\t${mouse_gene}"} = $grouped_orthology;
@@ -52,6 +54,12 @@ while (<MOUSE_HUMAN>) {
     my $orthology = $f[12];
     my $grouped_orthology = $f[13];
     my $paralogs = $f[14];
+    if ($MEAN_BIT_SCORE{"${human_gene}\t${mouse_gene}"}) {
+        $MEAN_BIT_SCORE{"${human_gene}\t${mouse_gene}"} += $bit_score;
+        $MEAN_BIT_SCORE{"${human_gene}\t${mouse_gene}"} /= 2;
+    } else {
+        $MEAN_BIT_SCORE{"${human_gene}\t${mouse_gene}"} = $bit_score;
+    }
     $REVERSE_BIT_SCORE{"${human_gene}\t${mouse_gene}"} = $bit_score;
     $REVERSE_ORTHOLOGY{"${human_gene}\t${mouse_gene}"} = $orthology;
     $REVERSE_GROUPED_ORTHOLOGY{"${human_gene}\t${mouse_gene}"} = $grouped_orthology;
@@ -61,19 +69,13 @@ close(MOUSE_HUMAN);
 
 my %HUMAN_GENE_PRINTED;
 my %MOUSE_GENE_PRINTED;
-open(BIT_SCORES, "$BIT_SCORES") || die "$!";
-while (<BIT_SCORES>) {
-    chomp;
-    my @f = split(/\t/, $_, -1);
-    my $human_gene = $f[0];
-    my $mouse_gene = $f[1];
-    my $human_mouse = "${human_gene}\t${mouse_gene}";
+for my $human_mouse (sort { $MEAN_BIT_SCORE{$b} <=> $MEAN_BIT_SCORE{$a} } keys %MEAN_BIT_SCORE) {
     if ($ORTHOLOGY{$human_mouse}         && $ORTHOLOGY{$human_mouse}         > 1 ||
         $REVERSE_ORTHOLOGY{$human_mouse} && $REVERSE_ORTHOLOGY{$human_mouse} > 1) {
+        my ($human_gene, $mouse_gene) = split(/\t/, $human_mouse);
         print_result($human_gene, $mouse_gene);
     }
 }
-close(BIT_SCORES);
 
 ################################################################################
 ### Function ###################################################################
