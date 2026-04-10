@@ -72,10 +72,10 @@ sub homology_search {
     }
 }
 
-select_paralog($NAME1, $NAME2);
-select_paralog($NAME2, $NAME1);
+calculate_paralogy($NAME1, $NAME2);
+calculate_paralogy($NAME2, $NAME1);
 
-sub select_paralog {
+sub calculate_paralogy {
     my ($name1, $name2) = @_;
 
     if (-s "${name1}-${name1}.homolog" and -s "${name1}-${name2}.homolog" and ! -s "${name1}.paralog") {
@@ -83,10 +83,10 @@ sub select_paralog {
     }
 }
 
-select_ortholog($NAME1, $NAME2);
-select_ortholog($NAME2, $NAME1);
+calculate_orthology($NAME1, $NAME2);
+calculate_orthology($NAME2, $NAME1);
 
-sub select_ortholog {
+sub calculate_orthology {
     my ($name1, $name2) = @_;
 
     my $pair = "${name1}-${name2}";
