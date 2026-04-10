@@ -78,8 +78,8 @@ calculate_paralogy($NAME2, $NAME1);
 sub calculate_paralogy {
     my ($name1, $name2) = @_;
 
-    if (-s "${name1}-${name1}.homolog" and -s "${name1}-${name2}.homolog" and ! -s "${name1}.paralog") {
-        exec_with_time("select_paralog.pl ${name1}-${name1}.homolog ${name1}-${name2}.homolog > ${name1}.paralog");
+    if (-s "${name1}-${name1}.homolog" and -s "${name1}-${name2}.homolog" and ! -s "${name1}.paralogy") {
+        exec_with_time("select_paralog.pl ${name1}-${name1}.homolog ${name1}-${name2}.homolog > ${name1}.paralogy");
     }
 }
 
@@ -90,13 +90,13 @@ sub calculate_orthology {
     my ($name1, $name2) = @_;
 
     my $pair = "${name1}-${name2}";
-    if (-s "${pair}.homolog" and -s "${name1}.paralog" and ! -s "${name1}.ortholog") {
-        exec_with_time("select_ortholog.pl ${pair}.homolog ${name1}.paralog > ${name1}.ortholog");
+    if (-s "${pair}.homolog" and -s "${name1}.paralogy" and ! -s "${name1}.orthology") {
+        exec_with_time("select_ortholog.pl ${pair}.homolog ${name1}.paralogy > ${name1}.orthology");
     }
 }
 
-if (-s "${NAME1}.ortholog" and -s "${NAME2}.ortholog" and ! -s "${NAME1}-${NAME2}.ortholog") {
-    exec_with_time("eval_bidirectional.pl ${NAME1}.ortholog ${NAME2}.ortholog > ${NAME1}-${NAME2}.ortholog");
+if (-s "${NAME1}.orthology" and -s "${NAME2}.orthology" and ! -s "${NAME1}-${NAME2}.ortholog") {
+    exec_with_time("eval_bidirectional.pl ${NAME1}.orthology ${NAME2}.orthology > ${NAME1}-${NAME2}.ortholog");
 }
 
 close(LOG);
