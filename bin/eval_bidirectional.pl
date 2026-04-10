@@ -67,7 +67,9 @@ while (<BIT_SCORES>) {
     my @f = split(/\t/, $_, -1);
     my $human_gene = $f[0];
     my $mouse_gene = $f[1];
-    if (sufficient_orthology($human_gene, $mouse_gene)) {
+    my $human_mouse = "${human_gene}\t${mouse_gene}";
+    if ($ORTHOLOGY{$human_mouse}         && $ORTHOLOGY{$human_mouse}         > 1 ||
+        $REVERSE_ORTHOLOGY{$human_mouse} && $REVERSE_ORTHOLOGY{$human_mouse} > 1) {
         print_result($human_gene, $mouse_gene);
     }
 }
@@ -76,18 +78,6 @@ close(BIT_SCORES);
 ################################################################################
 ### Function ###################################################################
 ################################################################################
-
-sub sufficient_orthology {
-    my ($human_gene, $mouse_gene) = @_;
-
-    my $human_mouse = "${human_gene}\t${mouse_gene}";
-    if ($ORTHOLOGY{$human_mouse}         && $ORTHOLOGY{$human_mouse}         > 1 ||
-        $REVERSE_ORTHOLOGY{$human_mouse} && $REVERSE_ORTHOLOGY{$human_mouse} > 1) {
-        return 1;
-    }
-
-    return 0;
-}
 
 sub print_result {
     my ($human_gene, $mouse_gene) = @_;
