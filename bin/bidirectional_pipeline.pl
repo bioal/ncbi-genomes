@@ -95,15 +95,8 @@ sub select_ortholog {
     }
 }
 
-select_bidirectional_ortholog($NAME1, $NAME2);
-
-sub select_bidirectional_ortholog {
-    my ($name1, $name2) = @_;
-
-    my $pair = "${name1}-${name2}";
-    if (-s "${name1}.ortholog" and -s "${name2}.ortholog" and ! -s "${pair}.ortholog") {
-        exec_with_time("eval_bidirectional.pl ${name1}.ortholog ${name2}.ortholog > ${pair}.ortholog");
-    }
+if (-s "${NAME1}.ortholog" and -s "${NAME2}.ortholog" and ! -s "${NAME1}-${NAME2}.ortholog") {
+    exec_with_time("eval_bidirectional.pl ${NAME1}.ortholog ${NAME2}.ortholog > ${NAME1}-${NAME2}.ortholog");
 }
 
 close(LOG);
