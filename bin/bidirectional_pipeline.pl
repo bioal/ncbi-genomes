@@ -79,7 +79,7 @@ sub calculate_paralogy {
     my ($name1, $name2) = @_;
 
     if (-s "${name1}-${name1}.homolog" and -s "${name1}-${name2}.homolog" and ! -s "${name1}.paralogy") {
-        exec_with_time("select_paralog.pl ${name1}-${name1}.homolog ${name1}-${name2}.homolog > ${name1}.paralogy");
+        exec_with_time("calculate_paralogy.pl ${name1}-${name1}.homolog ${name1}-${name2}.homolog > ${name1}.paralogy");
     }
 }
 
@@ -91,7 +91,7 @@ sub calculate_orthology {
 
     my $pair = "${name1}-${name2}";
     if (-s "${pair}.homolog" and -s "${name1}.paralogy" and ! -s "${name1}.orthology") {
-        exec_with_time("select_ortholog.pl ${pair}.homolog ${name1}.paralogy > ${name1}.orthology");
+        exec_with_time("calculate_orthology.pl ${pair}.homolog ${name1}.paralogy > ${name1}.orthology");
     }
 }
 
