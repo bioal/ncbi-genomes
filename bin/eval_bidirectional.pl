@@ -68,9 +68,7 @@ while (<BIT_SCORES>) {
     my $human_gene = $f[0];
     my $mouse_gene = $f[1];
     if (sufficient_orthology($human_gene, $mouse_gene)) {
-        if (! $OPT{s}) {
-            print_result($human_gene, $mouse_gene);
-        }
+        print_result($human_gene, $mouse_gene);
     }
 }
 close(BIT_SCORES);
@@ -107,18 +105,20 @@ sub print_result {
     if (includes_printed_genes($mouse_gene, \%MOUSE_GENE_PRINTED)) {
         return;
     }
-    print join("\t",
-               $human_gene,
-               $mouse_gene,
-               $BIT_SCORE{$human_mouse} || 0,
-               $REVERSE_BIT_SCORE{$human_mouse} || 0,
-               $ORTHOLOGY{$human_mouse} || 0,
-               $REVERSE_ORTHOLOGY{$human_mouse} || 0,
-               min($ORTHOLOGY{$human_mouse} || 0, $REVERSE_ORTHOLOGY{$human_mouse} || 0),
-               $GROUPED_ORTHOLOGY{$human_mouse} || 0,
-               $REVERSE_GROUPED_ORTHOLOGY{$human_mouse} || 0,
-               min($GROUPED_ORTHOLOGY{$human_mouse} || 0, $REVERSE_GROUPED_ORTHOLOGY{$human_mouse} || 0)
-        ), "\n";
+    if (! $OPT{s}) {
+        print join("\t",
+                   $human_gene,
+                   $mouse_gene,
+                   $BIT_SCORE{$human_mouse} || 0,
+                   $REVERSE_BIT_SCORE{$human_mouse} || 0,
+                   $ORTHOLOGY{$human_mouse} || 0,
+                   $REVERSE_ORTHOLOGY{$human_mouse} || 0,
+                   min($ORTHOLOGY{$human_mouse} || 0, $REVERSE_ORTHOLOGY{$human_mouse} || 0),
+                   $GROUPED_ORTHOLOGY{$human_mouse} || 0,
+                   $REVERSE_GROUPED_ORTHOLOGY{$human_mouse} || 0,
+                   min($GROUPED_ORTHOLOGY{$human_mouse} || 0, $REVERSE_GROUPED_ORTHOLOGY{$human_mouse} || 0)
+            ), "\n";
+    }
     remeber_printed_genes($human_gene, \%HUMAN_GENE_PRINTED);
     remeber_printed_genes($mouse_gene, \%MOUSE_GENE_PRINTED);
 }
