@@ -55,22 +55,6 @@ homology_search($PATH2, $PATH1);
 homology_search($PATH1, $PATH1);
 homology_search($PATH2, $PATH2);
 
-select_paralog($NAME1, $NAME2);
-select_paralog($NAME2, $NAME1);
-
-select_ortholog($NAME1, $NAME2);
-select_ortholog($NAME2, $NAME1);
-
-sum_bit_scores($NAME1, $NAME2);
-
-select_bidirectional_ortholog($NAME1, $NAME2);
-
-close(LOG);
-
-################################################################################
-### Functions ##################################################################
-################################################################################
-
 sub homology_search {
     my ($path1, $path2) = @_;
 
@@ -88,6 +72,9 @@ sub homology_search {
     }
 }
 
+select_paralog($NAME1, $NAME2);
+select_paralog($NAME2, $NAME1);
+
 sub select_paralog {
     my ($name1, $name2) = @_;
 
@@ -95,6 +82,9 @@ sub select_paralog {
         exec_with_time("select_paralog.pl ${name1}-${name1}.homolog ${name1}-${name2}.homolog > ${name1}.paralog");
     }
 }
+
+select_ortholog($NAME1, $NAME2);
+select_ortholog($NAME2, $NAME1);
 
 sub select_ortholog {
     my ($name1, $name2) = @_;
@@ -105,6 +95,8 @@ sub select_ortholog {
     }
 }
 
+sum_bit_scores($NAME1, $NAME2);
+
 sub sum_bit_scores {
     my ($name1, $name2) = @_;
 
@@ -114,6 +106,8 @@ sub sum_bit_scores {
     }
 }
 
+select_bidirectional_ortholog($NAME1, $NAME2);
+
 sub select_bidirectional_ortholog {
     my ($name1, $name2) = @_;
 
@@ -122,6 +116,12 @@ sub select_bidirectional_ortholog {
         exec_with_time("eval_bidirectional.pl ${name1}.ortholog ${name2}.ortholog ${name1}-${name2}.bit_scores > ${pair}.ortholog");
     }
 }
+
+close(LOG);
+
+################################################################################
+### Functions ##################################################################
+################################################################################
 
 sub exec_with_time {
     my ($command) = @_;
