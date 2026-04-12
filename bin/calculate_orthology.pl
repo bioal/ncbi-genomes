@@ -25,9 +25,8 @@ while (<PARALOG>) {
     my @f = split(/\t/, $_, -1);
     my $geneid1 = $f[0];
     my $geneid2 = $f[1];
-    my $score = $f[11];
-    my $paralogy = $f[12];
-    my $paralogs = $f[13];
+    my $score = $f[-2];
+    my $paralogy = $f[-1];
     if (!$THRESHOLD_SCORE{$geneid1} || $score > $THRESHOLD_SCORE{$geneid1}) {
         $THRESHOLD_SCORE{$geneid1} = $score;
     }
@@ -47,7 +46,7 @@ while (<HOMOLOG>) {
     my @f = split(/\t/, $_, -1);
     my $geneid1 = $f[0];
     my $geneid2 = $f[1];
-    my $score = $f[11];
+    my $score = $f[-1];
     my $orthology = get_orthology_score($score, $THRESHOLD_SCORE{$geneid1});
     my $grouped_orthology = get_orthology_score($score, $LOWER_THRESHOLD{$geneid1});
     my $paralogs = get_paralogs($geneid1);
