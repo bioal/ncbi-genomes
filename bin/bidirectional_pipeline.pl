@@ -6,10 +6,11 @@ my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM [-a ALIGNER] FAA_FILE_1 FAA_FILE_2
 -a ALIGNER: mmseqs-s8.5 or diamond-f (default)
+-f: force execution (even if output files already exist)
 ";
 
 my %OPT;
-getopts('a:', \%OPT);
+getopts('a:f', \%OPT);
 
 my $ALIGNER = $OPT{a} || "diamond-f";
 
@@ -48,6 +49,7 @@ chdir $DIR_NAME or die "Cannot change directory to $DIR_NAME: $!";
 
 my $LOG_FILE_PATH = "$PWD/$DIR_NAME/log";
 open(LOG, '>>', $LOG_FILE_PATH) or die "Cannot open log file $LOG_FILE_PATH: $!";
+print LOG "\n";
 print LOG "[$DATE_TIME] Starting pipeline for $NAME1 and $NAME2 with $ALIGNER\n";
 
 homology_search($PATH1, $PATH2);
@@ -72,14 +74,41 @@ sub homology_search {
     }
 }
 
+mean_bit_scores($NAME1, $NAME2);
+mean_bit_scores($NAME2, $NAME2);
+mean_bit_scores_intra($NAME1);
+mean_bit_scores_intra($NAME2);
+
+sub mean_bit_scores {
+    my ($name1, $name2) = @_;
+
+    if (-s "${name1}-${name2}.homolog" and -s "${name2}-${name1}.homolog") {
+        if ($OPT{f} or ! -s "${name1}-${name2}.score") {
+            exec_with_time("mean_bit_scores.pl ${name1}-${name2}.homolog ${name2}-${name1}.homolog > ${name1}-${name2}.score");
+        }
+    }
+}
+
+sub mean_bit_scores_intra {
+    my ($name1) = @_;
+
+    if (-s "${name1}-${name1}.homolog") {
+        if ($OPT{f} or ! -s "${name1}-${name1}.score") {
+            exec_with_time("mean_bit_scores_intra.pl ${name1}-${name1}.homolog > ${name1}-${name1}.score");
+        }
+    }
+}
+
 calculate_paralogy($NAME1, $NAME2);
 calculate_paralogy($NAME2, $NAME1);
 
 sub calculate_paralogy {
     my ($name1, $name2) = @_;
 
-    if (-s "${name1}-${name1}.homolog" and -s "${name1}-${name2}.homolog" and ! -s "${name1}.paralogy") {
-        exec_with_time("calculate_paralogy.pl ${name1}-${name1}.homolog ${name1}-${name2}.homolog > ${name1}.paralogy");
+    if (-s "${name1}-${name1}.score" and -s "${name1}-${name2}.score") {
+        if ($OPT{f} or ! -s "${name1}.paralogy") {
+            exec_with_time("calculate_paralogy.pl ${name1}-${name1}.score ${name1}-${name2}.score > ${name1}.paralogy");
+        }
     }
 }
 
@@ -90,16 +119,22 @@ sub calculate_orthology {
     my ($name1, $name2) = @_;
 
     my $pair = "${name1}-${name2}";
-    if (-s "${pair}.homolog" and -s "${name1}.paralogy" and ! -s "${name1}.orthology") {
-        exec_with_time("calculate_orthology.pl ${pair}.homolog ${name1}.paralogy > ${name1}.orthology");
+    if (-s "${pair}.homolog" and -s "${name1}.paralogy") {
+        if ($OPT{f} or ! -s "${name1}.orthology") {
+            exec_with_time("calculate_orthology.pl ${pair}.homolog ${name1}.paralogy > ${name1}.orthology");
+        }
     }
 }
 
-if (-s "${NAME1}.orthology" and -s "${NAME2}.orthology" and ! -s "${NAME1}-${NAME2}.ortholog") {
-    exec_with_time("eval_bidirectional.pl ${NAME1}.orthology ${NAME2}.orthology > ${NAME1}-${NAME2}.ortholog");
+if (-s "${NAME1}.orthology" and -s "${NAME2}.orthology") {
+    if ($OPT{f} or ! -s "${NAME1}-${NAME2}.ortholog") {
+        exec_with_time("eval_bidirectional.pl ${NAME1}.orthology ${NAME2}.orthology > ${NAME1}-${NAME2}.ortholog");
+    }
 }
 
 close(LOG);
+
+system "cat 9606-10090.ortholog | compare_with_ncbi.pl -3 > /dev/null";
 
 ################################################################################
 ### Functions ##################################################################
@@ -108,6 +143,7 @@ close(LOG);
 sub exec_with_time {
     my ($command) = @_;
 
+    print LOG "\n";
     print LOG "\$ $command\n";
 
     my $start_time = time;
