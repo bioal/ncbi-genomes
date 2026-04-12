@@ -28,10 +28,10 @@ while (<HUMAN_MOUSE>) {
     my @f = split(/\t/, $_, -1);
     my $human_gene = $f[0];
     my $mouse_gene = $f[1];
-    my $bit_score = $f[11];
-    my $orthology = $f[12];
-    my $grouped_orthology = $f[13];
-    my $paralogs = $f[14];
+    my $bit_score = $f[-4];
+    my $orthology = $f[-3];
+    my $grouped_orthology = $f[-2];
+    my $paralogs = $f[-1];
     $MEAN_BIT_SCORE{"${human_gene}\t${mouse_gene}"} = $bit_score;
     $BIT_SCORE{"${human_gene}\t${mouse_gene}"} = $bit_score;
     $ORTHOLOGY{"${human_gene}\t${mouse_gene}"} = $orthology;
@@ -50,10 +50,10 @@ while (<MOUSE_HUMAN>) {
     my @f = split(/\t/, $_, -1);
     my $mouse_gene = $f[0];
     my $human_gene = $f[1];
-    my $bit_score = $f[11];
-    my $orthology = $f[12];
-    my $grouped_orthology = $f[13];
-    my $paralogs = $f[14];
+    my $bit_score = $f[-4];
+    my $orthology = $f[-3];
+    my $grouped_orthology = $f[-2];
+    my $paralogs = $f[-1];
     if ($MEAN_BIT_SCORE{"${human_gene}\t${mouse_gene}"}) {
         $MEAN_BIT_SCORE{"${human_gene}\t${mouse_gene}"} += $bit_score;
         $MEAN_BIT_SCORE{"${human_gene}\t${mouse_gene}"} /= 2;
