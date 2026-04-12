@@ -23,8 +23,10 @@ while (<CROSS_SPECIES_SCORE>) {
     my @f = split(/\t/, $_, -1);
     my $gene1 = $f[0];
     my $gene2 = $f[1];
-    my $bit_score = $f[11];
+    my $bit_score = $f[-1];
     if (!$CROSS_SPECIES_SCORE{$gene1}) {
+        $CROSS_SPECIES_SCORE{$gene1} = $bit_score;
+    } elsif ($CROSS_SPECIES_SCORE{$gene1} < $bit_score) {
         $CROSS_SPECIES_SCORE{$gene1} = $bit_score;
     }
 }
