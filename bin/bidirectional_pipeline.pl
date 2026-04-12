@@ -93,8 +93,8 @@ sub mean_bit_scores_intra {
     my ($name1) = @_;
 
     if (-s "${name1}-${name1}.homolog") {
-        if ($OPT{f} or ! -s "${name1}-${name1}.score") {
-            exec_with_time("mean_bit_scores_intra.pl ${name1}-${name1}.homolog > ${name1}-${name1}.score");
+        if ($OPT{f} or ! -s "${name1}.score") {
+            exec_with_time("mean_bit_scores_intra.pl ${name1}-${name1}.homolog > ${name1}.score");
         }
     }
 }
@@ -105,9 +105,9 @@ calculate_paralogy($NAME2, $NAME1);
 sub calculate_paralogy {
     my ($name1, $name2) = @_;
 
-    if (-s "${name1}-${name1}.score" and -s "${name1}-${name2}.score") {
+    if (-s "${name1}.score" and -s "${name1}-${name2}.score") {
         if ($OPT{f} or ! -s "${name1}.paralogy") {
-            exec_with_time("calculate_paralogy.pl ${name1}-${name1}.score ${name1}-${name2}.score > ${name1}.paralogy");
+            exec_with_time("calculate_paralogy.pl ${name1}.score ${name1}-${name2}.score > ${name1}.paralogy");
         }
     }
 }
@@ -119,16 +119,16 @@ sub calculate_orthology {
     my ($name1, $name2) = @_;
 
     my $pair = "${name1}-${name2}";
-    if (-s "${pair}.homolog" and -s "${name1}.paralogy") {
+    if (-s "${pair}.score" and -s "${name1}.paralogy") {
         if ($OPT{f} or ! -s "${name1}.orthology") {
-            exec_with_time("calculate_orthology.pl ${pair}.homolog ${name1}.paralogy > ${name1}.orthology");
+            exec_with_time("calculate_orthology.pl ${pair}.score ${name1}.paralogy > ${name1}.orthology");
         }
     }
 }
 
-if (-s "${NAME1}.orthology" and -s "${NAME2}.orthology") {
+if (-s "${NAME1}-${NAME2}.score" and -s "${NAME1}.orthology" and -s "${NAME2}.orthology") {
     if ($OPT{f} or ! -s "${NAME1}-${NAME2}.ortholog") {
-        exec_with_time("eval_bidirectional.pl ${NAME1}.orthology ${NAME2}.orthology > ${NAME1}-${NAME2}.ortholog");
+        exec_with_time("cat ${NAME1}-${NAME2}.score | eval_bidirectional.pl ${NAME1}.orthology ${NAME2}.orthology > ${NAME1}-${NAME2}.ortholog");
     }
 }
 
