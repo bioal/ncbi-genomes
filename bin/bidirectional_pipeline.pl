@@ -66,11 +66,15 @@ sub homology_search {
     if (! -s "${pair}.tsv") {
         exec_with_time("$SEARCH_COMMAND $path1 $path2");
     }
-    if (-s "${pair}.tsv" and ! -s "${pair}.map_to_gene") {
-        exec_with_time("cat ${pair}.tsv | map_to_gene.pl $PWD/$MAP_TO_GENE_DIR/$name1 $PWD/$MAP_TO_GENE_DIR/$name2 > ${pair}.map_to_gene 2> ${pair}.map_to_gene.err")
+    if (-s "${pair}.tsv") {
+        if ($OPT{f} or ! -s "${pair}.gene") {
+            exec_with_time("cat ${pair}.tsv | map_to_gene.pl $PWD/$MAP_TO_GENE_DIR/$name1 $PWD/$MAP_TO_GENE_DIR/$name2 > ${pair}.gene 2> ${pair}.gene.err")
+        }
     }
-    if (-s "${pair}.map_to_gene" and ! -s "${pair}.homolog") {
-        exec_with_time("cat ${pair}.map_to_gene | select_max_score.pl > ${pair}.homolog")
+    if (-s "${pair}.gene") {
+        if ($OPT{f} or ! -s "${pair}.homology") {
+            exec_with_time("cat ${pair}.gene | select_max_score.pl > ${pair}.homology")
+        }
     }
 }
 
@@ -82,9 +86,9 @@ mean_bit_scores_intra($NAME2);
 sub mean_bit_scores {
     my ($name1, $name2) = @_;
 
-    if (-s "${name1}-${name2}.homolog" and -s "${name2}-${name1}.homolog") {
+    if (-s "${name1}-${name2}.homology" and -s "${name2}-${name1}.homology") {
         if ($OPT{f} or ! -s "${name1}-${name2}.score") {
-            exec_with_time("mean_bit_scores.pl ${name1}-${name2}.homolog ${name2}-${name1}.homolog > ${name1}-${name2}.score");
+            exec_with_time("mean_bit_scores.pl ${name1}-${name2}.homology ${name2}-${name1}.homology > ${name1}-${name2}.score");
         }
     }
 }
@@ -92,9 +96,9 @@ sub mean_bit_scores {
 sub mean_bit_scores_intra {
     my ($name1) = @_;
 
-    if (-s "${name1}-${name1}.homolog") {
+    if (-s "${name1}-${name1}.homology") {
         if ($OPT{f} or ! -s "${name1}.score") {
-            exec_with_time("mean_bit_scores_intra.pl ${name1}-${name1}.homolog > ${name1}.score");
+            exec_with_time("mean_bit_scores_intra.pl ${name1}-${name1}.homology > ${name1}.score");
         }
     }
 }
@@ -129,12 +133,11 @@ sub calculate_orthology {
 if (-s "${NAME1}-${NAME2}.score" and -s "${NAME1}.orthology" and -s "${NAME2}.orthology") {
     if ($OPT{f} or ! -s "${NAME1}-${NAME2}.ortholog") {
         exec_with_time("cat ${NAME1}-${NAME2}.score | eval_bidirectional.pl ${NAME1}.orthology ${NAME2}.orthology > ${NAME1}-${NAME2}.ortholog");
+        system "cat 9606-10090.ortholog | compare_with_ncbi.pl -3 > /dev/null";
     }
 }
 
 close(LOG);
-
-system "cat 9606-10090.ortholog | compare_with_ncbi.pl -3 > /dev/null";
 
 ################################################################################
 ### Functions ##################################################################
