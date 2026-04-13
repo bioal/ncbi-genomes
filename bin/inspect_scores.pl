@@ -75,30 +75,7 @@ sub output_table {
     my $target_symbols = get_symbols($target_genes);
     print "\n";
     print "== $file for $target_genes ($target_symbols)\n";
-
-    open(FILE1, $file) || die "$!";
-    while (<FILE1>) {
-        chomp;
-        my @f = split(/\t/, $_, -1);
-        my $genes1 = $f[0];
-        my $genes2 = $f[1];
-        if (includes_target_gene($genes1, $r_target_genes) || includes_target_gene($genes2, $r_target_genes)) {
-            print $_, "\t", get_symbols($genes1), " - ", get_symbols($genes2), "\n";
-        }
-    }
-    close(FILE1);
-}
-
-sub includes_target_gene {
-    my ($genes, $r_target_genes) = @_;
-
-    for my $gene (split(/,/, $genes)) {
-        if (${$r_target_genes}{$gene}) {
-            return 1;
-        }
-    }
-
-    return 0;
+    system "cat $file | extract_genes_from_table.pl $target_genes | align_column";
 }
 
 sub read_gene_info {
