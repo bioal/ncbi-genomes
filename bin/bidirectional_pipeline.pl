@@ -71,9 +71,13 @@ sub homology_search {
             exec_with_time("cat ${pair}.tsv | map_to_gene.pl $PWD/$MAP_TO_GENE_DIR/$name1 $PWD/$MAP_TO_GENE_DIR/$name2 > ${pair}.gene 2> ${pair}.gene.err")
         }
     }
+    my $homology_file = "${pair}.homology";
+    if ($name1 eq $name2) {
+        $homology_file = "${name1}.homology";
+    }
     if (-s "${pair}.gene") {
-        if ($OPT{f} or ! -s "${pair}.homology") {
-            exec_with_time("cat ${pair}.gene | select_max_score.pl > ${pair}.homology")
+        if ($OPT{f} or ! -s $homology_file) {
+            exec_with_time("cat ${pair}.gene | select_max_score.pl > $homology_file")
         }
     }
 }
@@ -96,9 +100,9 @@ sub mean_bit_scores {
 sub mean_bit_scores_intra {
     my ($name1) = @_;
 
-    if (-s "${name1}-${name1}.homology") {
+    if (-s "${name1}.homology") {
         if ($OPT{f} or ! -s "${name1}.score") {
-            exec_with_time("mean_bit_scores_intra.pl ${name1}-${name1}.homology > ${name1}.score");
+            exec_with_time("mean_bit_scores_intra.pl ${name1}.homology > ${name1}.score");
         }
     }
 }
