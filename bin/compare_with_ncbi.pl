@@ -28,8 +28,10 @@ read_reference($REFERENCE, \%REF);
 read_reference_multi_genes($REFERENCE2, \%REF2);
 
 my $COUNT_ALL = 0;
+my $COUNT_BOTH = 0;
 my $COUNT_NCBI = 0;
-my $COUNT_PLUS = 0;
+my $COUNT_SUMMARY = 0;
+my $COUNT_MATCH_SYMBOLS = 0;
 my $COUNT_FALSE = 0;
 while (<STDIN>) {
     chomp;
@@ -42,17 +44,18 @@ while (<STDIN>) {
     if ($OPT{3}) {
         if ($comparison eq "true" && $comparison2 eq "true") {
             print $_, "\t", "both", "\n" if !$OPT{f};
-            $COUNT_NCBI++;
+            $COUNT_BOTH++;
         } elsif ($comparison eq "true") {
             print $_, "\t", "ncbi_orthologs", "\n" if !$OPT{f};
             $COUNT_NCBI++;
         } elsif ($comparison2 eq "true") {
             print $_, "\t", "curated", "\n" if !$OPT{f};
-            $COUNT_PLUS++;
+            $COUNT_SUMMARY++;
         } else {
             my $match3 = match_symbols($gene1, $gene2, \%SYMBOL);
             if ($match3) {
                 print $_, "\t", "symbols_match", "\n" if !$OPT{f};
+                $COUNT_MATCH_SYMBOLS++;
             } else {
                 print $_, "\t", "false", "\n" if !$OPT{f};
                 my @symbols1 = get_symbols($gene1);
@@ -78,12 +81,14 @@ while (<STDIN>) {
         print $_, "\t", $comparison, "\n";
     }
 }
-my $COUNT_TRUE = $COUNT_NCBI + $COUNT_PLUS;
-my $ERROR_RATE = sprintf("%.2f", $COUNT_FALSE / $COUNT_ALL * 100);
-print STDERR "ncbi: $COUNT_NCBI\n";
-print STDERR "true: $COUNT_TRUE\n";
-print STDERR "false: $COUNT_FALSE\n";
-print STDERR "error: $ERROR_RATE\%\n";
+my $RATE = sprintf("%.2f", ($COUNT_BOTH + $COUNT_NCBI + $COUNT_SUMMARY + $COUNT_MATCH_SYMBOLS) / $COUNT_ALL * 100);
+print STDERR "all:\t", $COUNT_ALL, "\n";
+print STDERR "ncbi:\t", $COUNT_BOTH + $COUNT_NCBI, "\n";
+print STDERR "text:\t", $COUNT_BOTH + $COUNT_SUMMARY, "\n";
+print STDERR "union:\t", $COUNT_BOTH + $COUNT_NCBI + $COUNT_SUMMARY, "\n";
+print STDERR "match:\t", $COUNT_BOTH + $COUNT_NCBI + $COUNT_SUMMARY + $COUNT_MATCH_SYMBOLS, "\n";
+print STDERR "undef:\t", $COUNT_FALSE, "\n";
+print STDERR "rate:\t", $RATE, "\%\n";
 
 ################################################################################
 ### Function ###################################################################
