@@ -43,7 +43,7 @@ foreach my $key (sort keys %RESULT1) {
         print "< ", $RESULT1{$key}, "\n";
     }
 }
-print "\n";
+print "==\n";
 foreach my $key (sort keys %RESULT2) {
     if (!exists $RESULT1{$key}) {
         print "> ", $RESULT2{$key}, "\n";
