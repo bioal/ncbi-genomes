@@ -82,12 +82,12 @@ while (<STDIN>) {
     }
 }
 my $RATE = sprintf("%.2f", ($COUNT_BOTH + $COUNT_NCBI + $COUNT_SUMMARY + $COUNT_MATCH_SYMBOLS) / $COUNT_ALL * 100);
-print STDERR "all:\t", $COUNT_ALL, "\n";
 print STDERR "ncbi:\t", $COUNT_BOTH + $COUNT_NCBI, "\n";
 print STDERR "text:\t", $COUNT_BOTH + $COUNT_SUMMARY, "\n";
 print STDERR "union:\t", $COUNT_BOTH + $COUNT_NCBI + $COUNT_SUMMARY, "\n";
 print STDERR "match:\t", $COUNT_BOTH + $COUNT_NCBI + $COUNT_SUMMARY + $COUNT_MATCH_SYMBOLS, "\n";
 print STDERR "undef:\t", $COUNT_FALSE, "\n";
+print STDERR "all:\t", $COUNT_ALL, "\n";
 print STDERR "rate:\t", $RATE, "\%\n";
 
 ################################################################################
