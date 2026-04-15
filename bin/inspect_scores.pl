@@ -15,8 +15,6 @@ if (!@ARGV) {
     exit 1;
 }
 my ($INPUT_GENE) = @ARGV;
-my %INPUT_GENES;
-$INPUT_GENES{$INPUT_GENE} = 1;
 
 my %INFO;
 read_gene_info(
@@ -33,9 +31,7 @@ extract_genes("${INPUT_TAXID}.paralogy", $INPUT_GENE, \%PARALOGOUS_GENES);
 extract_genes("${INPUT_TAXID}.orthology", $INPUT_GENE, \%ORTHOLOGOUS_GENES);
 
 my %TARGET_GENES;
-for my $gene(keys %INPUT_GENES) {
-    $TARGET_GENES{$gene} = 1;
-}
+$TARGET_GENES{$INPUT_GENE} = 1;
 for my $gene(keys %PARALOGOUS_GENES) {
     $TARGET_GENES{$gene} = 1;
 }
