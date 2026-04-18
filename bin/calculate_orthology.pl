@@ -33,7 +33,7 @@ while (<PARALOG>) {
     if ($paralogy <= 1) {
         $LOWER_THRESHOLD{$geneid1} = $score;
     }
-    if ($paralogy >= 1) {
+    if ($paralogy > 1) {
         $PARALOGS{$geneid1}{$geneid2} = 1;
     }
 }
