@@ -109,7 +109,7 @@ sub output_table {
     my $target_symbols = get_symbols($target_genes);
     print "\n";
     print "== $file for $target_genes ($target_symbols)\n";
-    system "cat $file | extract_genes_from_table.pl -s $INPUT_GENE $target_genes | align_column";
+    system "cat $file | grep_genes_in_table.pl -s $INPUT_GENE $target_genes | align_column";
 }
 
 sub read_gene_info {
