@@ -4,7 +4,7 @@ use File::Basename;
 use Getopt::Std;
 my $PROGRAM = basename $0;
 my $USAGE=
-"Usage: $PROGRAM
+"Usage: cat TABLE | $PROGRAM REFERENCE_TABLE
 -f: only false
 ";
 
