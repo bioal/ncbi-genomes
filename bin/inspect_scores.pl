@@ -47,6 +47,44 @@ output_table("9606-10090.ortholog", \%TARGET_GENES);
 ################################################################################
 ### Function ###################################################################
 ################################################################################
+sub extract_paralogs {
+    my ($file, $input_gene, $r_hits) = @_;
+
+    open(FILE1, $file) || die "$!";
+    while (<FILE1>) {
+        chomp;
+        my @f = split(/\t/, $_, -1);
+        my $gene1 = $f[0];
+        my $gene2 = $f[1];
+        my $paralogy = $f[3];
+        if ($gene1 eq $input_gene) {
+            if ($paralogy > 1) {
+                ${$r_hits}{$gene2} = 1;
+            }
+        }
+    }
+    close(FILE1);
+}
+
+sub extract_orthologs {
+    my ($file, $input_gene, $r_hits) = @_;
+
+    open(FILE1, $file) || die "$!";
+    while (<FILE1>) {
+        chomp;
+        my @f = split(/\t/, $_, -1);
+        my $gene1 = $f[0];
+        my $gene2 = $f[1];
+        my $orthology = $f[5];
+        if ($gene1 eq $input_gene) {
+            if ($orthology > 1) {
+                ${$r_hits}{$gene2} = 1;
+            }
+        }
+    }
+    close(FILE1);
+}
+
 sub extract_genes {
     my ($file, $input_gene, $r_hits) = @_;
 
@@ -71,7 +109,7 @@ sub output_table {
     my $target_symbols = get_symbols($target_genes);
     print "\n";
     print "== $file for $target_genes ($target_symbols)\n";
-    system "cat $file | extract_genes_from_table.pl $target_genes | align_column";
+    system "cat $file | extract_genes_from_table.pl -s $INPUT_GENE $target_genes | align_column";
 }
 
 sub read_gene_info {
@@ -98,7 +136,13 @@ sub get_symbols {
     my @symbols;
     foreach my $gene (split(/,/, $genes)) {
         if ($INFO{$gene} && $INFO{$gene}{symbol}) {
-            push(@symbols, $INFO{$gene}{symbol});
+            my $symbol = $INFO{$gene}{symbol};
+            if ($gene eq $INPUT_GENE) {
+                $symbol = "\e[91m$symbol\e[0m";
+            } else {
+                $symbol = "\e[38;5;45m$symbol\e[0m";
+            }
+            push(@symbols, $symbol);
         }
     }
 

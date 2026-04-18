@@ -5,10 +5,11 @@ use Getopt::Std;
 my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM GENES(comma-separated or space-separated)
+-s GENE: seed gene ID
 ";
 
 my %OPT;
-getopts('', \%OPT);
+getopts('s:', \%OPT);
 
 if (!@ARGV) {
     print STDERR $USAGE;
@@ -26,6 +27,9 @@ my %INFO;
 read_gene_info(
     "/home/chiba/github/hchiba1/human-mouse/ncbi_orthologs/gene_info.2026-04-02",
     \%INFO);
+
+my $SEED_GENE = $OPT{s};
+my $SEED_GENE_SYMBOL = get_symbols($SEED_GENE);
 
 while (<STDIN>) {
     chomp;
@@ -77,7 +81,13 @@ sub get_symbols {
     my @symbols;
     foreach my $gene (split(/,/, $genes)) {
         if ($INFO{$gene} && $INFO{$gene}{symbol}) {
-            push(@symbols, $INFO{$gene}{symbol});
+            my $symbol = $INFO{$gene}{symbol};
+            if ($gene eq $SEED_GENE) {
+                $symbol = "\e[91m$symbol\e[0m";
+            } elsif ($TARGET_GENES{$gene}) {
+                $symbol = "\e[38;5;45m$symbol\e[0m";
+            }
+            push(@symbols, $symbol);
         }
     }
 
