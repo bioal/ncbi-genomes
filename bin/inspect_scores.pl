@@ -23,26 +23,30 @@ read_gene_info(
 
 my $INPUT_TAXID = $INFO{$INPUT_GENE}{taxid};
 my $OUTPUT_TAXID = $INPUT_TAXID eq "9606" ? "10090" : "9606";
+
+my %SEED_GENES;
+$SEED_GENES{$INPUT_GENE} = 1;
+extract_orthologs("${INPUT_TAXID}.orthology", $INPUT_GENE, \%SEED_GENES);
+
 print "${INPUT_TAXID}:$INPUT_GENE ", get_symbols($INPUT_GENE), "\n";
 
 my %PARALOGOUS_GENES;
-my %ORTHOLOGOUS_GENES;
-extract_genes("${INPUT_TAXID}.paralogy", $INPUT_GENE, \%PARALOGOUS_GENES);
-extract_genes("${INPUT_TAXID}.orthology", $INPUT_GENE, \%ORTHOLOGOUS_GENES);
+$PARALOGOUS_GENES{$INPUT_GENE} = 1;
+extract_paralogs("${INPUT_TAXID}.paralogy", $INPUT_GENE, \%PARALOGOUS_GENES);
 
-my %TARGET_GENES;
-$TARGET_GENES{$INPUT_GENE} = 1;
-for my $gene(keys %PARALOGOUS_GENES) {
-    $TARGET_GENES{$gene} = 1;
-}
+my %HOMOLOGOUS_GENES;
+my %SIMILAR_GENES;
+$SIMILAR_GENES{$INPUT_GENE} = 1;
+extract_genes("${INPUT_TAXID}.orthology", $INPUT_GENE, \%HOMOLOGOUS_GENES);
+extract_genes("${INPUT_TAXID}.paralogy", $INPUT_GENE, \%SIMILAR_GENES);
 
-output_table("${INPUT_TAXID}.paralogy", \%TARGET_GENES);
-output_table("${INPUT_TAXID}.orthology", \%TARGET_GENES);
+output_table("${INPUT_TAXID}.paralogy", \%PARALOGOUS_GENES);
+output_table("${INPUT_TAXID}.orthology", \%PARALOGOUS_GENES);
 
-output_table("${OUTPUT_TAXID}.paralogy", \%ORTHOLOGOUS_GENES);
-output_table("${OUTPUT_TAXID}.orthology", \%ORTHOLOGOUS_GENES);
+output_table("${OUTPUT_TAXID}.orthology", \%HOMOLOGOUS_GENES);
+output_table("${OUTPUT_TAXID}.paralogy", \%HOMOLOGOUS_GENES);
 
-output_table("9606-10090.ortholog", \%TARGET_GENES);
+output_table("9606-10090.ortholog", \%SIMILAR_GENES);
 
 ################################################################################
 ### Function ###################################################################
@@ -102,14 +106,19 @@ sub extract_genes {
 }
 
 sub output_table {
-    my ($file, $r_target_genes) = @_;
+    my ($file, $r_target_genes, $r_seed_genes) = @_;
 
     my @target_genes = sort {$a<=>$b} keys %{$r_target_genes};
     my $target_genes = join(",", @target_genes);
     my $target_symbols = get_symbols($target_genes);
+
+    my $seed_genes = join(",", keys %SEED_GENES);
+    if ($r_seed_genes) {
+        $seed_genes = join(",", keys %{$r_seed_genes});
+    }
     print "\n";
     print "== $file for $target_genes ($target_symbols)\n";
-    system "cat $file | grep_genes_in_table.pl -s $INPUT_GENE $target_genes | align_column";
+    system "cat $file | grep_genes_in_table.pl -s $seed_genes $target_genes | align_column";
 }
 
 sub read_gene_info {
@@ -137,7 +146,7 @@ sub get_symbols {
     foreach my $gene (split(/,/, $genes)) {
         if ($INFO{$gene} && $INFO{$gene}{symbol}) {
             my $symbol = $INFO{$gene}{symbol};
-            if ($gene eq $INPUT_GENE) {
+            if ($SEED_GENES{$gene}) {
                 $symbol = "\e[91m$symbol\e[0m";
             } else {
                 $symbol = "\e[38;5;45m$symbol\e[0m";
