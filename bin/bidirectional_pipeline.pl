@@ -19,6 +19,8 @@ if ($ALIGNER eq "mmseqs-s8.5") {
     $SEARCH_COMMAND = "mmseqs.pl -s 8.5";
 } elsif ($ALIGNER eq "diamond-f") {
     $SEARCH_COMMAND = "diamond.pl -f";
+} elsif ($ALIGNER eq "ssearch") {
+    $SEARCH_COMMAND = "ssearch.pl";
 } else {
     print STDERR "Unsupported aligner: $ALIGNER\n";
     print STDERR $USAGE;
@@ -83,7 +85,7 @@ sub homology_search {
 }
 
 mean_bit_scores($NAME1, $NAME2);
-mean_bit_scores($NAME2, $NAME2);
+mean_bit_scores($NAME2, $NAME1);
 mean_bit_scores_intra($NAME1);
 mean_bit_scores_intra($NAME2);
 
