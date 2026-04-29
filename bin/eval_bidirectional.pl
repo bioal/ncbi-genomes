@@ -96,9 +96,57 @@ for my $line (@LINES) {
     }
 }
 
+for my $line (@LINES) {
+    my @f = split(/\t/, $line, -1);
+    my $human_gene = $f[0];
+    my $mouse_gene = $f[1];
+    my $human_mouse = "${human_gene}\t${mouse_gene}";
+    if ($HUMAN_GENE_PRINTED{$human_gene} || $MOUSE_GENE_PRINTED{$mouse_gene}) {
+        next;
+    }
+    if ($GROUPED_ORTHOLOGY{$human_mouse}         && $GROUPED_ORTHOLOGY{$human_mouse}         > 1 &&
+        $REVERSE_GROUPED_ORTHOLOGY{$human_mouse} && $REVERSE_GROUPED_ORTHOLOGY{$human_mouse} > 1) {
+        print_rest($human_gene, $mouse_gene);
+    }
+}
+
 ################################################################################
 ### Function ###################################################################
 ################################################################################
+
+sub print_rest {
+    my ($human_gene, $mouse_gene) = @_;
+
+    my $human_mouse = "${human_gene}\t${mouse_gene}";
+    if ($PARALOGS{$human_mouse}) {
+        my @human_paralogs = filter_human_genes($PARALOGS{$human_mouse}, $mouse_gene);
+        if (@human_paralogs) {
+            $human_gene = join(",", $human_gene, @human_paralogs);
+        }
+    }
+    if ($REVERSE_PARALOGS{$human_mouse}) {
+        my @mouse_paralogs = filter_mouse_genes($REVERSE_PARALOGS{$human_mouse}, $human_gene);
+        if (@mouse_paralogs) {
+            $mouse_gene = join(",", $mouse_gene, @mouse_paralogs);
+        }
+    }
+    if (! $OPT{s}) {
+        print join("\t",
+                   $human_gene,
+                   $mouse_gene,
+                   $BIT_SCORE{$human_mouse} || 0,
+                   $REVERSE_BIT_SCORE{$human_mouse} || 0,
+                   $ORTHOLOGY{$human_mouse} || 0,
+                   $REVERSE_ORTHOLOGY{$human_mouse} || 0,
+                   min($ORTHOLOGY{$human_mouse} || 0, $REVERSE_ORTHOLOGY{$human_mouse} || 0),
+                   $GROUPED_ORTHOLOGY{$human_mouse} || 0,
+                   $REVERSE_GROUPED_ORTHOLOGY{$human_mouse} || 0,
+                   min($GROUPED_ORTHOLOGY{$human_mouse} || 0, $REVERSE_GROUPED_ORTHOLOGY{$human_mouse} || 0)
+            ), "\n";
+    }
+    remeber_printed_genes($human_gene, \%HUMAN_GENE_PRINTED);
+    remeber_printed_genes($mouse_gene, \%MOUSE_GENE_PRINTED);
+}
 
 sub print_result {
     my ($human_gene, $mouse_gene) = @_;
@@ -159,6 +207,32 @@ sub filter_mouse_paralogs {
             if (! includes_printed_genes($gene, \%MOUSE_GENE_PRINTED)) {
                 push(@paralogs, $gene);
             }
+        }
+    }
+    return @paralogs;
+}
+
+sub filter_human_genes {
+    my ($genes, $anchor) = @_;
+
+    my @genes = split(/,/, $genes);
+    my @paralogs;
+    for my $gene (@genes) {
+        if (! includes_printed_genes($gene, \%HUMAN_GENE_PRINTED)) {
+            push(@paralogs, $gene);
+        }
+    }
+    return @paralogs;
+}
+
+sub filter_mouse_genes {
+    my ($genes, $anchor) = @_;
+
+    my @genes = split(/,/, $genes);
+    my @paralogs;
+    for my $gene (@genes) {
+        if (! includes_printed_genes($gene, \%MOUSE_GENE_PRINTED)) {
+            push(@paralogs, $gene);
         }
     }
     return @paralogs;
