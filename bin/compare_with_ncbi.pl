@@ -17,10 +17,10 @@ getopts('ft123', \%OPT);
 
 my %SYMBOL;
 read_gene_info(
-    "/home/chiba/github/hchiba1/human-mouse/ncbi_orthologs/gene_info.2026-04-02",
+    "/home/chiba/github/bioal/human-mouse/ncbi_orthologs/gene_info.2026-04-02",
     \%SYMBOL);
 
-my $REFERENCE = "/home/chiba/github/hchiba1/human-mouse/ncbi_orthologs/human-mouse.2026-04-02";
+my $REFERENCE = "/home/chiba/github/bioal/human-mouse/ncbi_orthologs/human-mouse.2026-04-02";
 my $REFERENCE2 = "/home/chiba/github/dbcls/ncbigene-rdf/data/mouse/human_mouse.orthologs";
 my %REF;
 my %REF2;

@@ -16,7 +16,7 @@ getopts('pdst', \%OPT);
 
 my %INFO;
 read_gene_info(
-    "/home/chiba/github/hchiba1/human-mouse/ncbi_orthologs/gene_info.2026-04-02",
+    "/home/chiba/github/bioal/human-mouse/ncbi_orthologs/gene_info.2026-04-02",
     \%INFO
     );
 
