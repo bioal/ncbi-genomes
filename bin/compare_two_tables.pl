@@ -23,7 +23,8 @@ while (<RESULT1>) {
     my @f = split(/\t/, $_, -1);
     my $gene1 = $f[0];
     my $gene2 = $f[1];
-    $RESULT1{"${gene1}\t${gene2}"} = $_;
+    my $key = normalized_key($gene1, $gene2);
+    $RESULT1{$key} = $_;
 }
 close(RESULT1);
 
@@ -34,7 +35,8 @@ while (<RESULT2>) {
     my @f = split(/\t/, $_, -1);
     my $gene1 = $f[0];
     my $gene2 = $f[1];
-    $RESULT2{"${gene1}\t${gene2}"} = $_;
+    my $key = normalized_key($gene1, $gene2);
+    $RESULT2{$key} = $_;
 }
 close(RESULT2);
 
@@ -50,3 +52,16 @@ foreach my $key (sort keys %RESULT2) {
     }
 }
 
+################################################################################
+### Function ###################################################################
+################################################################################
+sub normalized_key {
+    my ($genes1, $genes2) = @_;
+
+    my @genes1 = split(/,/, $genes1);
+    my @genes2 = split(/,/, $genes2);
+    my @sorted_genes1 = sort { $a <=> $b } @genes1;
+    my @sorted_genes2 = sort { $a <=> $b } @genes2;
+
+    return join(",", @sorted_genes1) . "\t" . join(",", @sorted_genes2);
+}
