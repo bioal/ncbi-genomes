@@ -21,6 +21,8 @@ if ($ALIGNER eq "mmseqs-s8.5") {
     $SEARCH_COMMAND = "diamond.pl -f";
 } elsif ($ALIGNER eq "ssearch") {
     $SEARCH_COMMAND = "ssearch.pl";
+} elsif ($ALIGNER eq "ggsearch") {
+    $SEARCH_COMMAND = "ggsearch.pl";
 } else {
     print STDERR "Unsupported aligner: $ALIGNER\n";
     print STDERR $USAGE;
