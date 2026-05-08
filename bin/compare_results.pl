@@ -16,25 +16,18 @@ if (!@ARGV) {
     exit 1;
 }
 
-my %RESULT;
-read_results($ARGV[0], \%RESULT);
+my %REF_LINE;
+read_references($ARGV[0], \%REF_LINE);
 
 while (<STDIN>) {
     chomp;
     my @f = split(/\t/, $_, -1);
     my $gene1 = $f[0];
     my $gene2 = $f[1];
-    if ($OPT{f}) {
-        if (!$RESULT{"${gene1}\t${gene2}"}) {
-            print $_,  "\n";
-        }
+    if ($REF_LINE{"${gene1}\t${gene2}"}) {
+        print $_, "\t", $REF_LINE{"${gene1}\t${gene2}"}, "\n" if ! $OPT{f};
     } else {
-        if ($RESULT{"${gene1}\t${gene2}"}) {
-            print $_;
-            print "\t";
-            print $RESULT{"${gene1}\t${gene2}"};
-            print "\n";
-        }
+        print $_, "\n" if $OPT{f};
     }
 }
 
@@ -42,7 +35,7 @@ while (<STDIN>) {
 ### Function ###################################################################
 ################################################################################
 
-sub read_results {
+sub read_references {
     my ($file, $r_hash) = @_;
 
     open(FILE, "$file") || die "$!";
