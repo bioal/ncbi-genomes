@@ -17,9 +17,14 @@ if (!@ARGV) {
 my ($INPUT_GENE) = @ARGV;
 
 my %INFO;
+my %SYMBOL2ID;
 read_gene_info(
     "/home/chiba/github/bioal/human-mouse/ncbi_orthologs/gene_info.2026-04-02",
     \%INFO);
+
+if ($SYMBOL2ID{$INPUT_GENE}) {
+    $INPUT_GENE = $SYMBOL2ID{$INPUT_GENE};
+}
 
 my $INPUT_TAXID = $INFO{$INPUT_GENE}{taxid};
 my $OUTPUT_TAXID = $INPUT_TAXID eq "9606" ? "10090" : "9606";
@@ -133,6 +138,7 @@ sub read_gene_info {
         my $symbol = $f[2];
         ${$r_info}{$geneid}{symbol} = $symbol;
         ${$r_info}{$geneid}{taxid} = $taxid;
+        $SYMBOL2ID{$symbol} = $geneid;
     }
     close(FILE);
 
