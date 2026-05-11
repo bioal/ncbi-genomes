@@ -29,8 +29,9 @@ my %PRINTED_GENE;
 # Detect anchor pairs between human and mouse genes.
 # In addition to the top-scoring anchor pair, near-top-scoring genes
 # (score > 0.9 * top_score) are inclucded.
-my $RATIO = 1;
-# my $RATIO = 0.9;
+# But the orthology threshold is more stringent: orthology > 2 for both directions
+my $SECOND_ORTHOLOGY_THRESHOLD = 2;
+my $RATIO = 0.9;
 my %TOP_SCORE;
 my @ANCHOR_PAIR;
 my %ANCHOR;
@@ -55,7 +56,8 @@ for my $line (@LINES) {
             $TOP_SCORE{$mouse_gene} = $bit_score;
             remember_printed_genes($human_gene);
             remember_printed_genes($mouse_gene);
-        } else {
+        } elsif ($ORTHOLOGY{$human_mouse} && $ORTHOLOGY{$human_mouse} > 2 &&
+                 $ORTHOLOGY{$mouse_human} && $ORTHOLOGY{$mouse_human} > 2) {
             if ($TOP_SCORE{$human_gene} && $bit_score > $TOP_SCORE{$human_gene} * $RATIO) {
                 my $mouse_anchor = $ANCHOR{$human_gene}{pair};
                 if (! $PRINTED_GENE{$mouse_gene}) {
