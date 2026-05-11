@@ -21,42 +21,9 @@ my %BIT_SCORE;
 my %ORTHOLOGY;
 my %GROUPED_ORTHOLOGY;
 my %PARALOGS;
+read_directional_scores($HUMAN_MOUSE);
+read_directional_scores($MOUSE_HUMAN);
 
-open(HUMAN_MOUSE, "$HUMAN_MOUSE") || die "$!";
-while (<HUMAN_MOUSE>) {
-    chomp;
-    my @f = split(/\t/, $_, -1);
-    my $human_gene = $f[0];
-    my $mouse_gene = $f[1];
-    my $bit_score = $f[-4];
-    my $orthology = $f[-3];
-    my $grouped_orthology = $f[-2];
-    my $paralogs = $f[-1];
-    $BIT_SCORE{"${human_gene}\t${mouse_gene}"} = $bit_score;
-    $ORTHOLOGY{"${human_gene}\t${mouse_gene}"} = $orthology;
-    $GROUPED_ORTHOLOGY{"${human_gene}\t${mouse_gene}"} = $grouped_orthology;
-    $PARALOGS{"${human_gene}\t${mouse_gene}"} = $paralogs;
-}
-close(HUMAN_MOUSE);
-
-open(MOUSE_HUMAN, "$MOUSE_HUMAN") || die "$!";
-while (<MOUSE_HUMAN>) {
-    chomp;
-    my @f = split(/\t/, $_, -1);
-    my $mouse_gene = $f[0];
-    my $human_gene = $f[1];
-    my $bit_score = $f[-4];
-    my $orthology = $f[-3];
-    my $grouped_orthology = $f[-2];
-    my $paralogs = $f[-1];
-    $BIT_SCORE{"${mouse_gene}\t${human_gene}"} = $bit_score;
-    $ORTHOLOGY{"${mouse_gene}\t${human_gene}"} = $orthology;
-    $GROUPED_ORTHOLOGY{"${mouse_gene}\t${human_gene}"} = $grouped_orthology;
-    $PARALOGS{"${mouse_gene}\t${human_gene}"} = $paralogs;
-}
-close(MOUSE_HUMAN);
-
-# Output results
 my %PRINTED_GENE;
 
 # Create anchor pairs between human and mouse genes
@@ -128,20 +95,7 @@ for my $anchor_pair (@ANCHOR_PAIR) {
         }
     }
 
-    print join("\t",
-               $human_output,
-               $mouse_output,
-               $BIT_SCORE{$human_mouse} || 0,
-               $BIT_SCORE{$mouse_human} || 0,
-               $ORTHOLOGY{$human_mouse} || 0,
-               $ORTHOLOGY{$mouse_human} || 0,
-               min($ORTHOLOGY{$human_mouse} || 0, $ORTHOLOGY{$mouse_human} || 0),
-               $GROUPED_ORTHOLOGY{$human_mouse} || 0,
-               $GROUPED_ORTHOLOGY{$mouse_human} || 0,
-               min($GROUPED_ORTHOLOGY{$human_mouse} || 0, $GROUPED_ORTHOLOGY{$mouse_human} || 0)
-        ), "\n";
-    remember_printed_genes($human_output);
-    remember_printed_genes($mouse_output);
+    output_line($human_output, $mouse_output, $human_mouse, $mouse_human);
 }
 
 # Add many-to-many orthologs
@@ -174,26 +128,56 @@ for my $line (@LINES) {
             }
         }
 
-        print join("\t",
-                   $human_output,
-                   $mouse_output,
-                   $BIT_SCORE{$human_mouse} || 0,
-                   $BIT_SCORE{$mouse_human} || 0,
-                   $ORTHOLOGY{$human_mouse} || 0,
-                   $ORTHOLOGY{$mouse_human} || 0,
-                   min($ORTHOLOGY{$human_mouse} || 0, $ORTHOLOGY{$mouse_human} || 0),
-                   $GROUPED_ORTHOLOGY{$human_mouse} || 0,
-                   $GROUPED_ORTHOLOGY{$mouse_human} || 0,
-                   min($GROUPED_ORTHOLOGY{$human_mouse} || 0, $GROUPED_ORTHOLOGY{$mouse_human} || 0)
-            ), "\n";
-        remember_printed_genes($human_output);
-        remember_printed_genes($mouse_output);
+        output_line($human_output, $mouse_output, $human_mouse, $mouse_human);
     }
 }
 
 ################################################################################
 ### Function ###################################################################
 ################################################################################
+sub read_directional_scores {
+    my ($file) = @_;
+
+    open(FILE, $file) or die "$!";
+    while (<FILE>) {
+        chomp;
+        my @f = split(/\t/, $_, -1);
+
+        my $gene1 = $f[0];
+        my $gene2 = $f[1];
+        my $bit_score = $f[-4];
+        my $orthology = $f[-3];
+        my $grouped_orthology = $f[-2];
+        my $paralogs = $f[-1];
+
+        my $pair = "${gene1}\t${gene2}";
+        $BIT_SCORE{$pair} = $bit_score;
+        $ORTHOLOGY{$pair} = $orthology;
+        $GROUPED_ORTHOLOGY{$pair} = $grouped_orthology;
+        $PARALOGS{$pair} = $paralogs;
+    }
+    close(FILE);
+}
+
+sub output_line {
+    my ($human_output, $mouse_output, $human_mouse, $mouse_human) = @_;
+
+    print join("\t",
+               $human_output,
+               $mouse_output,
+               $BIT_SCORE{$human_mouse} || 0,
+               $BIT_SCORE{$mouse_human} || 0,
+               $ORTHOLOGY{$human_mouse} || 0,
+               $ORTHOLOGY{$mouse_human} || 0,
+               min($ORTHOLOGY{$human_mouse} || 0, $ORTHOLOGY{$mouse_human} || 0),
+               $GROUPED_ORTHOLOGY{$human_mouse} || 0,
+               $GROUPED_ORTHOLOGY{$mouse_human} || 0,
+               min($GROUPED_ORTHOLOGY{$human_mouse} || 0, $GROUPED_ORTHOLOGY{$mouse_human} || 0)
+        ), "\n";
+    remember_printed_genes($human_output);
+    remember_printed_genes($mouse_output);
+}
+
 sub remember_printed_genes {
     my ($genes) = @_;
 
