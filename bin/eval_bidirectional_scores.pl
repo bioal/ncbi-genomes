@@ -26,9 +26,9 @@ read_directional_scores($MOUSE_HUMAN);
 
 my %PRINTED_GENE;
 
-# Create anchor pairs between human and mouse genes
-# not only the top score gene, but also other genes are included
-# (score > 0.9 * top_score)
+# Detect anchor pairs between human and mouse genes.
+# In addition to the top-scoring anchor pair, near-top-scoring genes
+# (score > 0.9 * top_score) are inclucded.
 my $RATIO = 1;
 # my $RATIO = 0.9;
 my %TOP_SCORE;
@@ -74,12 +74,12 @@ for my $line (@LINES) {
     }
 }
 
+# Print anchor pairs and paralogs
 for my $anchor_pair (@ANCHOR_PAIR) {
     my ($human_gene, $mouse_gene) = split(/\t/, $anchor_pair);
     my $human_output = $ANCHOR{$human_gene}{member};
     my $mouse_output = $ANCHOR{$mouse_gene}{member};
 
-    # Add paralogs
     my $human_mouse = "${human_gene}\t${mouse_gene}";
     my $mouse_human = "${mouse_gene}\t${human_gene}";
     if ($PARALOGS{$human_mouse}) {
@@ -100,7 +100,7 @@ for my $anchor_pair (@ANCHOR_PAIR) {
     output_line($human_output, $mouse_output, $human_mouse, $mouse_human);
 }
 
-# Add many-to-many orthologs
+# Print remaining many-to-many orthologs
 for my $line (@LINES) {
     my @f = split(/\t/, $line, -1);
     my $human_gene = $f[0];
