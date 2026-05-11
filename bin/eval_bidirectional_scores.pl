@@ -83,13 +83,15 @@ for my $anchor_pair (@ANCHOR_PAIR) {
     my $human_mouse = "${human_gene}\t${mouse_gene}";
     my $mouse_human = "${mouse_gene}\t${human_gene}";
     if ($PARALOGS{$human_mouse}) {
-        my @paralogs = filter_paralogs($PARALOGS{$human_mouse}, $mouse_gene);
+        my @paralogs = filter_printed_genes(
+            filter_by_orthology($PARALOGS{$human_mouse}, $mouse_gene));
         if (@paralogs) {
             $human_output .= "," . join(",", @paralogs);
         }
     }
     if ($PARALOGS{$mouse_human}) {
-        my @paralogs = filter_paralogs($PARALOGS{$mouse_human}, $human_gene);
+        my @paralogs = filter_printed_genes(
+            filter_by_orthology($PARALOGS{$mouse_human}, $human_gene));
         if (@paralogs) {
             $mouse_output .= "," . join(",", @paralogs);
         }
@@ -187,20 +189,18 @@ sub remember_printed_genes {
     }
 }
 
-sub filter_paralogs {
+sub filter_by_orthology {
     my ($genes, $anchor) = @_;
 
     my @out;
     for my $gene (split(/,/, $genes)) {
         if ($ORTHOLOGY{"${anchor}\t${gene}"} &&
             $ORTHOLOGY{"${anchor}\t${gene}"} > 1) {
-            if (! $PRINTED_GENE{$gene}) {
-                push(@out, $gene);
-            }
+            push(@out, $gene);
         }
     }
 
-    return @out;
+    return join(",", @out);
 }
 
 sub filter_printed_genes {
