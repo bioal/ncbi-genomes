@@ -56,8 +56,8 @@ for my $line (@LINES) {
             $TOP_SCORE{$mouse_gene} = $bit_score;
             remember_printed_genes($human_gene);
             remember_printed_genes($mouse_gene);
-        } elsif ($ORTHOLOGY{$human_mouse} && $ORTHOLOGY{$human_mouse} > 2 &&
-                 $ORTHOLOGY{$mouse_human} && $ORTHOLOGY{$mouse_human} > 2) {
+        } elsif ($ORTHOLOGY{$human_mouse} && $ORTHOLOGY{$human_mouse} > $SECOND_ORTHOLOGY_THRESHOLD &&
+                 $ORTHOLOGY{$mouse_human} && $ORTHOLOGY{$mouse_human} > $SECOND_ORTHOLOGY_THRESHOLD) {
             if ($TOP_SCORE{$human_gene} && $bit_score > $TOP_SCORE{$human_gene} * $RATIO) {
                 my $mouse_anchor = $ANCHOR{$human_gene}{pair};
                 if (! $PRINTED_GENE{$mouse_gene}) {
@@ -182,15 +182,6 @@ sub output_line {
     remember_printed_genes($mouse_output);
 }
 
-sub remember_printed_genes {
-    my ($genes) = @_;
-
-    my @genes = split(/,/, $genes);
-    foreach my $gene (@genes) {
-        $PRINTED_GENE{$gene} = 1;
-    }
-}
-
 sub filter_by_orthology {
     my ($genes, $anchor) = @_;
 
@@ -216,6 +207,15 @@ sub filter_printed_genes {
     }
 
     return join(",", @out);
+}
+
+sub remember_printed_genes {
+    my ($genes) = @_;
+
+    my @genes = split(/,/, $genes);
+    foreach my $gene (@genes) {
+        $PRINTED_GENE{$gene} = 1;
+    }
 }
 
 sub min {
