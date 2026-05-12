@@ -41,7 +41,7 @@ for my $gene (@ARGV) {
             $GENE{$geneid} = 1;
         }
     } else {
-        print STDERR "Gene not found: $gene\n";
+        print STDERR "No such symbol: $gene\n";
     }
 }
 
@@ -76,7 +76,7 @@ for my $i (sort {$a <=> $b} keys %HIT) {
                    format_pos($start_pos),
                    format_pos($end_pos),
                    $orientation,
-                   $SYMBOL{$gene} || 0,
+                   get_symbol($gene),
             ), "\n";
     }
     print "\n";
@@ -85,6 +85,18 @@ for my $i (sort {$a <=> $b} keys %HIT) {
 ################################################################################
 ### Function ###################################################################
 ################################################################################
+sub get_symbol {
+    my ($geneid) = @_;
+
+    if ($SYMBOL{$geneid} && $GENE{$geneid}) {
+        return "[$SYMBOL{$geneid}]";
+    } elsif ($SYMBOL{$geneid}) {
+        return $SYMBOL{$geneid};
+    } else {
+        return 0;
+    }
+}
+
 sub get_start_idx {
     my ($i, $num) = @_;
 
