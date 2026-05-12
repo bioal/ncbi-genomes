@@ -33,12 +33,15 @@ if (!@ARGV) {
 }
 
 my %GENE;
+my @INPUT_GENE;
 for my $gene (@ARGV) {
     if ($gene =~ /^\d+$/) {
         $GENE{$gene} = 1;
+        push @INPUT_GENE, $gene;
     } elsif ($SYMBOL2ID{$gene}) {
         for my $geneid (@{$SYMBOL2ID{$gene}}) {
             $GENE{$geneid} = 1;
+            push @INPUT_GENE, $geneid;
         }
     } else {
         print STDERR "No such symbol: $gene\n";
@@ -49,18 +52,26 @@ my @LINE = <STDIN>;
 chomp(@LINE);
 
 my @NC;
-my %HIT;
+my %FOUND;
+my %REVERSE_ORIENTATION;
 for (my $i=0; $i<@LINE; $i++) {
     my @f = split(/\t/, $LINE[$i], -1);
     my $nc = $f[0];
     my $gene = $f[1];
+    my $orientation = $f[4];
     $NC[$i] = $nc;
     if ($GENE{$gene}) {
-        $HIT{$i} = 1;
+        $FOUND{$gene} = $i;
+    }
+    if ($orientation eq "-") {
+        $REVERSE_ORIENTATION{$gene} = 1;
     }
 }
 
-for my $i (sort {$a <=> $b} keys %HIT) {
+my %BLOCK;
+for my $gene (keys %FOUND) {
+    my $i = $FOUND{$gene};
+    my $block = "";
     my $start_idx = get_start_idx($i, $NUM_BEFORE);
     my $end_idx = get_end_idx($i, $NUM_AFTER);
     for (my $j=$start_idx; $j<=$end_idx; $j++) {
@@ -70,21 +81,63 @@ for my $i (sort {$a <=> $b} keys %HIT) {
         my $start_pos = $f[2];
         my $end_pos = $f[3];
         my $orientation = $f[4];
-        print join("\t",
-                   $nc,
-                   $gene,
-                   format_pos($start_pos),
-                   format_pos($end_pos),
-                   $orientation,
-                   get_symbol($gene),
-            ), "\n";
+        $block .= join("\t",
+                     $nc,
+                     $gene,
+                     format_pos($start_pos),
+                     format_pos($end_pos),
+                     $orientation,
+                     get_symbol($gene),
+            ) . "\n";
     }
-    print "\n";
+    $BLOCK{$gene} = $block;
 }
+
+my @OUT;
+for my $gene (@INPUT_GENE) {
+    if ($FOUND{$gene}) {
+        my $out = $BLOCK{$gene};
+        if ($REVERSE_ORIENTATION{$gene}) {
+            $out = reverse_block($BLOCK{$gene});
+        }
+        push @OUT, $out;
+    }
+}
+
+my $OUT = paste_blocks(@OUT);
+print "$OUT\n";
 
 ################################################################################
 ### Function ###################################################################
 ################################################################################
+
+sub reverse_block {
+    my ($block) = @_;
+
+    my @lines = split(/\n/, $block);
+    @lines = reverse @lines;
+
+    return join("\n", @lines);
+}
+
+sub paste_blocks {
+    my (@block) = @_;
+
+    my @out;
+    for my $block (@block) {
+        my @block_line = split(/\n/, $block);
+        for (my $i=0; $i<@block_line; $i++) {
+            if ($out[$i]) {
+                $out[$i] .= "\t" . $block_line[$i];
+            } else {
+                $out[$i] = $block_line[$i];
+            }
+        }
+    }
+
+    return join("\n", @out);
+}
+
 sub get_symbol {
     my ($geneid) = @_;
 
