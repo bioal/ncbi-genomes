@@ -31,10 +31,11 @@ if (!@ARGV) {
     print STDERR $USAGE;
     exit 1;
 }
+my @GENE = split(/,/, join(",", @ARGV));
 
 my %GENE;
 my @INPUT_GENE;
-for my $gene (@ARGV) {
+for my $gene (@GENE) {
     if ($gene =~ /^\d+$/) {
         $GENE{$gene} = 1;
         push @INPUT_GENE, $gene;
