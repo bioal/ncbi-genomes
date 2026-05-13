@@ -14,6 +14,7 @@ my %OPT;
 getopts('b:a:c:', \%OPT);
 
 my $NUM_BEFORE = 5;
+my $NUM_AFTER = 5;
 if (defined($OPT{'c'})) {
     $NUM_BEFORE = $OPT{'c'};
     $NUM_AFTER = $OPT{'c'};
@@ -21,7 +22,6 @@ if (defined($OPT{'c'})) {
 if (defined($OPT{'b'})) {
     $NUM_BEFORE = $OPT{'b'};
 }
-my $NUM_AFTER = 5;
 if (defined($OPT{'a'})) {
     $NUM_AFTER = $OPT{'a'};
 }
@@ -78,8 +78,8 @@ my %BLOCK;
 for my $gene (keys %FOUND) {
     my $i = $FOUND{$gene};
     my $block = "";
-    my $start_idx = get_start_idx($i, $NUM_BEFORE);
-    my $end_idx = get_end_idx($i, $NUM_AFTER);
+    my $start_idx = get_start_idx($i);
+    my $end_idx = get_end_idx($i);
     for (my $j=$start_idx; $j<=$end_idx; $j++) {
         my @f = split(/\t/, $LINE[$j], -1);
         my $nc = $f[0];
@@ -157,11 +157,11 @@ sub get_symbol {
 }
 
 sub get_start_idx {
-    my ($i, $num) = @_;
+    my ($i) = @_;
 
     my $start_idx = $i;
     my $count = 0;
-    while ($count < $num && $start_idx > 0) {
+    while ($count < $NUM_BEFORE && $start_idx > 0) {
         $start_idx--;
         if ($NC[$start_idx] eq $NC[$i]) {
             $count++;
@@ -172,11 +172,11 @@ sub get_start_idx {
 }
 
 sub get_end_idx {
-    my ($i, $n) = @_;
+    my ($i) = @_;
 
     my $end_idx = $i;
     my $count = 0;
-    while ($count < $n && $end_idx < $#LINE) {
+    while ($count < $NUM_AFTER && $end_idx < $#LINE) {
         $end_idx++;
         if ($NC[$end_idx] eq $NC[$i]) {
             $count++;
