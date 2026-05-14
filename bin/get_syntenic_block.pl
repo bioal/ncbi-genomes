@@ -32,6 +32,9 @@ read_gene_info(
     "/home/chiba/github/bioal/human-mouse/ncbi_orthologs/gene_info.2026-04-02",
     \%SYMBOL);
 
+my %ORTHOLOG;
+read_orthology("/home/chiba/github/bioal/human-mouse/human-mouse.v1.tsv");
+
 if (!@ARGV) {
     print STDERR $USAGE;
     exit 1;
@@ -74,14 +77,27 @@ for (my $i=0; $i<@LINE; $i++) {
     }
 }
 
-my %BLOCK;
+my %FOUND_LINES;
+my %ORTHOLOGOUS_PAIR;
 for my $gene (keys %FOUND) {
     my $i = $FOUND{$gene};
-    my $block = "";
     my $start_idx = get_start_idx($i);
     my $end_idx = get_end_idx($i);
+    my @line;
     for (my $j=$start_idx; $j<=$end_idx; $j++) {
         my @f = split(/\t/, $LINE[$j], -1);
+        my $gene = $f[1];
+        remember_orthologous_pair($gene);
+        push @line, $LINE[$j];
+    }
+    $FOUND_LINES{$gene} = \@line;
+}
+
+my %BLOCK;
+for my $gene (keys %FOUND_LINES) {
+    my $block = "";
+    for my $line (@{$FOUND_LINES{$gene}}) {
+        my @f = split(/\t/, $line, -1);
         my $nc = $f[0];
         my $gene = $f[1];
         my $start_pos = $f[2];
@@ -117,6 +133,38 @@ print "$OUT\n";
 ### Function ###################################################################
 ################################################################################
 
+sub read_orthology {
+    my ($file, $r_hash) = @_;
+
+    open(FILE, "$file") || die "$!";
+    while (<FILE>) {
+        chomp;
+        my @f = split(/\t/, $_, -1);
+        if (@f != 4) {
+            die "Error: Invalid orthology file format\n";
+        }
+        if ($. == 1) {
+            next; # Skip header
+        }
+        my $human_gene = $f[0];
+        my $mouse_gene = $f[1];
+        $ORTHOLOG{$human_gene} = $mouse_gene;
+    }
+    close(FILE);
+
+    return 0;
+}
+
+sub remember_orthologous_pair {
+    my ($gene) = @_;
+
+    if ($ORTHOLOG{$gene}) {
+        $ORTHOLOGOUS_PAIR{$gene} = 1;
+        my $mouse_gene = $ORTHOLOG{$gene};
+        $ORTHOLOGOUS_PAIR{$mouse_gene} = 1;
+    }
+}
+
 sub reverse_block {
     my ($block) = @_;
 
@@ -148,9 +196,11 @@ sub get_symbol {
     my ($geneid) = @_;
 
     if ($SYMBOL{$geneid} && $GENE{$geneid}) {
-        return "[$SYMBOL{$geneid}]";
+        return "[[" . $SYMBOL{$geneid};
+    } elsif ($SYMBOL{$geneid} && $ORTHOLOGOUS_PAIR{$geneid}) {
+        return "[ " . $SYMBOL{$geneid} . " ]";
     } elsif ($SYMBOL{$geneid}) {
-        return $SYMBOL{$geneid};
+        return "  " . $SYMBOL{$geneid};
     } else {
         return 0;
     }
