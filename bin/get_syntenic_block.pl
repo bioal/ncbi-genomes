@@ -9,10 +9,12 @@ my $USAGE=
 -b: number of genes before the gene
 -a: number of genes after the gene
 -R: cancel reverse order of the output
+-s: output only the syntenic score
+-v: verbose mode for scoring
 ";
 
 my %OPT;
-getopts('b:a:c:R', \%OPT);
+getopts('b:a:c:Rsv', \%OPT);
 
 my $NUM_BEFORE = 5;
 my $NUM_AFTER = 5;
@@ -78,9 +80,11 @@ for (my $i=0; $i<@LINE; $i++) {
     }
 }
 
+# Get lines of each syntenic block
 my %FOUND_LINES;
 my %REMEMBER_GENE;
 my %SYMBOL_MAX_LEN;
+my $COUNT_GENES = 0;
 for my $anchor (keys %FOUND) {
     my $i = $FOUND{$anchor};
     my $start_idx = get_start_idx($i);
@@ -94,16 +98,28 @@ for my $anchor (keys %FOUND) {
         push @line, $LINE[$j];
     }
     $FOUND_LINES{$anchor} = \@line;
+    $COUNT_GENES += scalar(@line) - 1; # exclude the anchor gene
 }
 
+# Flag genes that have orthologs
 my %HIGHLIGHT_GENE;
+my $COUNT_ORTHOLOGS = 0;
 for my $gene (keys %REMEMBER_GENE) {
     if ($ORTHOLOG{$gene}) {
         my $mouse_gene = $ORTHOLOG{$gene};
         if ($REMEMBER_GENE{$mouse_gene}) {
             $HIGHLIGHT_GENE{$gene} = 1;
             $HIGHLIGHT_GENE{$mouse_gene} = 1;
+            $COUNT_ORTHOLOGS += 2;
         }
+    }
+}
+for my $anchor (keys %FOUND) {
+    my $i = $FOUND{$anchor};
+    my @f = split(/\t/, $LINE[$i], -1);
+    my $gene = $f[1];
+    if ($HIGHLIGHT_GENE{$gene}) {
+        $COUNT_ORTHOLOGS -= 1; # Exclude the anchor gene
     }
 }
 
@@ -142,7 +158,16 @@ for my $gene (@INPUT_GENE) {
     }
 }
 
-print paste_blocks(@OUT), "\n";
+if ($OPT{s}) {
+    my $RATIO = $COUNT_ORTHOLOGS / $COUNT_GENES;
+    if ($OPT{v}) {
+        printf("%.1f = $COUNT_ORTHOLOGS / $COUNT_GENES\n", $RATIO * 100);
+    } else {
+        print join("\t", @GENE, $RATIO), "\n";
+    }
+} else {
+    print paste_blocks(@OUT), "\n";
+}
 
 ################################################################################
 ### Function ###################################################################
