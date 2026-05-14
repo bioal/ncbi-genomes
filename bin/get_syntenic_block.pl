@@ -78,25 +78,38 @@ for (my $i=0; $i<@LINE; $i++) {
 }
 
 my %FOUND_LINES;
-my %ORTHOLOGOUS_PAIR;
-for my $gene (keys %FOUND) {
-    my $i = $FOUND{$gene};
+my %REMEMBER_GENE;
+my %SYMBOL_MAX_LEN;
+for my $anchor (keys %FOUND) {
+    my $i = $FOUND{$anchor};
     my $start_idx = get_start_idx($i);
     my $end_idx = get_end_idx($i);
     my @line;
     for (my $j=$start_idx; $j<=$end_idx; $j++) {
         my @f = split(/\t/, $LINE[$j], -1);
         my $gene = $f[1];
-        remember_orthologous_pair($gene);
+        $REMEMBER_GENE{$gene} = 1;
+        remember_symbol_max_len($anchor, $gene);
         push @line, $LINE[$j];
     }
-    $FOUND_LINES{$gene} = \@line;
+    $FOUND_LINES{$anchor} = \@line;
+}
+
+my %HIGHLIGHT_GENE;
+for my $gene (keys %REMEMBER_GENE) {
+    if ($ORTHOLOG{$gene}) {
+        my $mouse_gene = $ORTHOLOG{$gene};
+        if ($REMEMBER_GENE{$mouse_gene}) {
+            $HIGHLIGHT_GENE{$gene} = 1;
+            $HIGHLIGHT_GENE{$mouse_gene} = 1;
+        }
+    }
 }
 
 my %BLOCK;
-for my $gene (keys %FOUND_LINES) {
+for my $anchor (keys %FOUND_LINES) {
     my $block = "";
-    for my $line (@{$FOUND_LINES{$gene}}) {
+    for my $line (@{$FOUND_LINES{$anchor}}) {
         my @f = split(/\t/, $line, -1);
         my $nc = $f[0];
         my $gene = $f[1];
@@ -109,10 +122,10 @@ for my $gene (keys %FOUND_LINES) {
                      format_pos($start_pos),
                      format_pos($end_pos),
                      $orientation,
-                     get_symbol($gene),
+                     get_symbol($anchor, $gene),
             ) . "\n";
     }
-    $BLOCK{$gene} = $block;
+    $BLOCK{$anchor} = $block;
 }
 
 my @OUT;
@@ -155,13 +168,13 @@ sub read_orthology {
     return 0;
 }
 
-sub remember_orthologous_pair {
-    my ($gene) = @_;
+sub remember_symbol_max_len {
+    my ($anchor, $gene) = @_;
 
-    if ($ORTHOLOG{$gene}) {
-        $ORTHOLOGOUS_PAIR{$gene} = 1;
-        my $mouse_gene = $ORTHOLOG{$gene};
-        $ORTHOLOGOUS_PAIR{$mouse_gene} = 1;
+    my $symbol = $SYMBOL{$gene} || 0;
+    if (! defined($SYMBOL_MAX_LEN{$anchor}) ||
+        length($symbol) > $SYMBOL_MAX_LEN{$anchor}) {
+        $SYMBOL_MAX_LEN{$anchor} = length($symbol);
     }
 }
 
@@ -193,17 +206,22 @@ sub paste_blocks {
 }
 
 sub get_symbol {
-    my ($geneid) = @_;
+    my ($anchor, $geneid) = @_;
 
-    if ($SYMBOL{$geneid} && $GENE{$geneid}) {
-        return "[[" . $SYMBOL{$geneid};
-    } elsif ($SYMBOL{$geneid} && $ORTHOLOGOUS_PAIR{$geneid}) {
-        return "[ " . $SYMBOL{$geneid} . " ]";
-    } elsif ($SYMBOL{$geneid}) {
-        return "  " . $SYMBOL{$geneid};
-    } else {
-        return 0;
+    if ($SYMBOL{$geneid}) {
+        my $symbol = $SYMBOL{$geneid};
+        my $padding_len = $SYMBOL_MAX_LEN{$anchor} - length($symbol);
+        my $padding = " " x $padding_len;
+        if ($GENE{$geneid}) {
+            return "[[ " . $symbol . $padding . "]]";
+        } elsif ($HIGHLIGHT_GENE{$geneid}) {
+            return " [ " . $symbol . $padding . "]";
+        } else {
+            return "   " . $symbol;
+        }
     }
+
+    return 0;
 }
 
 sub get_start_idx {
