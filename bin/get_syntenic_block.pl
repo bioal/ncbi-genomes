@@ -148,7 +148,7 @@ print "$OUT\n";
 ################################################################################
 
 sub read_orthology {
-    my ($file, $r_hash) = @_;
+    my ($file) = @_;
 
     open(FILE, "$file") || die "$!";
     while (<FILE>) {
