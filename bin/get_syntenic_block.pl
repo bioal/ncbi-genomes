@@ -187,7 +187,10 @@ sub get_syntenic_block {
     }
 
     my $ret;
-    my $RATIO = $COUNT_ORTHOLOGS / $COUNT_GENES;
+    my $RATIO = -1;
+    if ($COUNT_GENES) {
+        $RATIO = $COUNT_ORTHOLOGS / $COUNT_GENES;
+    }
     if ($OPT{s}) {
         if ($OPT{v}) {
             $ret = sprintf("%.1f = $COUNT_ORTHOLOGS / $COUNT_GENES", $RATIO * 100);
