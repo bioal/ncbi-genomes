@@ -8,10 +8,11 @@ my $USAGE=
 -c: number of genes before and after the gene
 -b: number of genes before the gene
 -a: number of genes after the gene
+-R: cancel reverse order of the output
 ";
 
 my %OPT;
-getopts('b:a:c:', \%OPT);
+getopts('b:a:c:R', \%OPT);
 
 my $NUM_BEFORE = 5;
 my $NUM_AFTER = 5;
@@ -132,7 +133,7 @@ my @OUT;
 for my $gene (@INPUT_GENE) {
     if ($FOUND{$gene}) {
         my $out = $BLOCK{$gene};
-        if ($REVERSE_ORIENTATION{$gene}) {
+        if ($REVERSE_ORIENTATION{$gene} && !$OPT{R}) {
             $out = reverse_block($BLOCK{$gene});
         }
         push @OUT, $out;
