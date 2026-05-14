@@ -107,6 +107,7 @@ for my $gene (keys %REMEMBER_GENE) {
     }
 }
 
+# Format genes in each block
 my %BLOCK;
 for my $anchor (keys %FOUND_LINES) {
     my $block = "";
@@ -123,12 +124,13 @@ for my $anchor (keys %FOUND_LINES) {
                      format_pos($start_pos),
                      format_pos($end_pos),
                      $orientation,
-                     get_symbol($anchor, $gene),
+                     format_symbol($anchor, $gene),
             ) . "\n";
     }
     $BLOCK{$anchor} = $block;
 }
 
+# Reverse the gene order if necessary
 my @OUT;
 for my $gene (@INPUT_GENE) {
     if ($FOUND{$gene}) {
@@ -140,8 +142,7 @@ for my $gene (@INPUT_GENE) {
     }
 }
 
-my $OUT = paste_blocks(@OUT);
-print "$OUT\n";
+print paste_blocks(@OUT), "\n";
 
 ################################################################################
 ### Function ###################################################################
@@ -206,7 +207,7 @@ sub paste_blocks {
     return join("\n", @out);
 }
 
-sub get_symbol {
+sub format_symbol {
     my ($anchor, $geneid) = @_;
 
     if ($SYMBOL{$geneid}) {
