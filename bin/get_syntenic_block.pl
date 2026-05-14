@@ -5,6 +5,7 @@ use Getopt::Std;
 my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM
+-f GENE_POS_FILE: genes sorted by pos
 -c: number of genes before and after the gene
 -b: number of genes before the gene
 -a: number of genes after the gene
@@ -14,7 +15,7 @@ my $USAGE=
 ";
 
 my %OPT;
-getopts('b:a:c:Rsv', \%OPT);
+getopts('f:b:a:c:Rsv', \%OPT);
 
 my $NUM_BEFORE = 5;
 my $NUM_AFTER = 5;
@@ -28,6 +29,12 @@ if (defined($OPT{'b'})) {
 if (defined($OPT{'a'})) {
     $NUM_AFTER = $OPT{'a'};
 }
+
+my $GENE_POS_FILE = $OPT{'f'} || "/home/chiba/github/bioal/human-mouse/gene2refseq.sorted_by_pos";
+open(GENE_POS, $GENE_POS_FILE) || die "$!";
+my @LINE = <GENE_POS>;
+chomp(@LINE);
+close(GENE_POS);
 
 my %SYMBOL;
 my %SYMBOL2ID;
@@ -59,9 +66,6 @@ for my $gene (@GENE) {
         print STDERR "No such symbol: $gene\n";
     }
 }
-
-my @LINE = <STDIN>;
-chomp(@LINE);
 
 my @NC;
 my %FOUND;
