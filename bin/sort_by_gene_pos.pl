@@ -10,6 +10,17 @@ my $USAGE=
 my %OPT;
 getopts('', \%OPT);
 
+my $READTHROUGH_GENE_LIST = "/home/chiba/github/bioal/human-mouse/readthrough";
+my %READTHROUGH_GENE;
+open(FILE, "$READTHROUGH_GENE_LIST") || die "$!";
+while (<FILE>) {
+    chomp;
+    my @f = split(/\t/, $_, -1);
+    my $gene_id = $f[1];
+    $READTHROUGH_GENE{$gene_id} = 1;
+}
+close(FILE);
+
 my %GENE;
 while (<STDIN>) {
     chomp;
@@ -25,8 +36,10 @@ while (<STDIN>) {
     my $end_pos = $f[10];
     my $orientation = $f[11];
     my $assembly = $f[12];
-    if ($assembly ne "Reference GRCh38.p14 Primary Assembly" &&
-        $assembly ne "Reference GRCm39 C57BL/6J") {
+    if (! is_target_assembly($nc, $assembly)) {
+        next;
+    }
+    if ($READTHROUGH_GENE{$gene_id}) {
         next;
     }
     if ($start_pos !~ /^\d+$/) {
@@ -70,5 +83,27 @@ for my $nc (sort keys %GENE) {
         my $end_pos = $GENE{$nc}{$gene_id}{end_pos};
         my $orientation = $GENE{$nc}{$gene_id}{orientation};
         print join("\t", $nc, $gene_id, $start_pos, $end_pos, $orientation), "\n";
+    }
+}
+
+################################################################################
+### Function ###################################################################
+################################################################################
+sub is_target_assembly {
+    my ($nc, $assembly) = @_;
+
+    if ($assembly eq "Reference GRCh38.p14 Primary Assembly") {
+        return 1;
+    }
+    if ($assembly eq "Reference GRCm39 C57BL/6J") {
+        return 1;
+    }
+    if ($nc eq "NC_012920.1") {
+        # human mitochondrial DNA
+        return 1;
+    }
+    if ($nc eq "NC_005089.1") {
+        # mouse mitochondrial DNA
+        return 1;
     }
 }
