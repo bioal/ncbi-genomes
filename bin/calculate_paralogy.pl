@@ -48,14 +48,11 @@ while (<INTRA_SPECIES>) {
         next; # Skip lower scores
     }
 
-    my $paralogy = 100;
-    my $cross_species_score = $CROSS_SPECIES_SCORE{$gene1};
-    if ($cross_species_score) {
-        $paralogy = $score / $cross_species_score;
-    }
+    my $cross_species_score = $CROSS_SPECIES_SCORE{$gene1} || 0;
+    my $paralogy = $score / ($score + $cross_species_score);
     print $_,  "\t", $paralogy, "\n";
 
-    if ($paralogy < 1) {
+    if ($paralogy < 0.5) {
         $THRESHOLD{$gene1} = $score;
     }
 }
