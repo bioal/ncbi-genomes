@@ -26,15 +26,33 @@ read_directional_scores($MOUSE_HUMAN);
 
 my %PRINTED_GENE;
 
+my @ANCHOR_PAIR;
+my %ANCHOR;
+
+my $CURATION_FILE = "/home/chiba/github/bioal/human-mouse/v2/curation";
+open(CURATION, "$CURATION_FILE") || die "$!";
+while (<CURATION>) {
+    chomp;
+    my @f = split;
+    my $gene1 = $f[0];
+    my $gene2 = $f[1];
+    push @ANCHOR_PAIR, "${gene1}\t${gene2}";
+    $ANCHOR{$gene1}{member} = $gene1;
+    $ANCHOR{$gene2}{member} = $gene2;
+    $ANCHOR{$gene1}{pair} = $gene2;
+    $ANCHOR{$gene2}{pair} = $gene1;
+    remember_printed_genes($gene1);
+    remember_printed_genes($gene2);
+}
+close(CURATION);
+
 # Detect anchor pairs between human and mouse genes.
 # In addition to the top-scoring anchor pair, near-top-scoring genes
 # (score > 0.9 * top_score) are inclucded.
-# But the orthology threshold is more stringent: orthology > 2 for both directions
-my $SECOND_ORTHOLOGY_THRESHOLD = 2;
+# But the orthology threshold is more stringent: orthology > 0.8 for both directions
+my $SECOND_ORTHOLOGY_THRESHOLD = 0.9;
 my $RATIO = 0.9;
 my %TOP_SCORE;
-my @ANCHOR_PAIR;
-my %ANCHOR;
 my @LINES = <STDIN>;
 chomp(@LINES);
 for my $line (@LINES) {
@@ -46,7 +64,7 @@ for my $line (@LINES) {
     my $mouse_human = "${mouse_gene}\t${human_gene}";
     if ($ORTHOLOGY{$human_mouse} && $ORTHOLOGY{$human_mouse} > 0.5 ||
         $ORTHOLOGY{$mouse_human} && $ORTHOLOGY{$mouse_human} > 0.5) {
-        if (! $ANCHOR{$human_gene} && ! $ANCHOR{$mouse_gene}) {
+        if (! $PRINTED_GENE{$human_gene} && ! $PRINTED_GENE{$mouse_gene}) {
             push @ANCHOR_PAIR, "${human_gene}\t${mouse_gene}";
             $ANCHOR{$human_gene}{member} = $human_gene;
             $ANCHOR{$mouse_gene}{member} = $mouse_gene;
