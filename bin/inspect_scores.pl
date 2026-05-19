@@ -28,30 +28,46 @@ if ($SYMBOL2ID{$INPUT_GENE}) {
 
 my $INPUT_TAXID = $INFO{$INPUT_GENE}{taxid};
 my $OUTPUT_TAXID = $INPUT_TAXID eq "9606" ? "10090" : "9606";
+my $OUTPUT_FILE = "9606-10090";
+
+my $INPUT_ORGANISM = $INPUT_TAXID;
+my $OUTPUT_ORGANISM = $OUTPUT_TAXID;
+if (-f "human-mouse.ortholog") {
+    if ($INPUT_TAXID eq "9606") {
+        $INPUT_ORGANISM = "human";
+        $OUTPUT_ORGANISM = "mouse";
+    } elsif ($INPUT_TAXID eq "10090") {
+        $INPUT_ORGANISM = "mouse";
+        $OUTPUT_ORGANISM = "human";
+    } else {
+        die "Unknown taxid: $INPUT_TAXID";
+    }
+    $OUTPUT_FILE = "human-mouse";
+}
 
 my %SEED_GENES;
 $SEED_GENES{$INPUT_GENE} = 1;
-extract_orthologs("${INPUT_TAXID}.orthology", $INPUT_GENE, \%SEED_GENES);
+extract_orthologs("${INPUT_ORGANISM}.orthology", $INPUT_GENE, \%SEED_GENES);
 
-print "${INPUT_TAXID}:$INPUT_GENE ", get_symbols($INPUT_GENE), "\n";
+print "${INPUT_ORGANISM}:$INPUT_GENE ", get_symbols($INPUT_GENE), "\n";
 
 my %PARALOGOUS_GENES;
 $PARALOGOUS_GENES{$INPUT_GENE} = 1;
-extract_paralogs("${INPUT_TAXID}.paralogy", $INPUT_GENE, \%PARALOGOUS_GENES);
+extract_paralogs("${INPUT_ORGANISM}.paralogy", $INPUT_GENE, \%PARALOGOUS_GENES);
 
 my %HOMOLOGOUS_GENES;
 my %SIMILAR_GENES;
 $SIMILAR_GENES{$INPUT_GENE} = 1;
-extract_genes("${INPUT_TAXID}.orthology", $INPUT_GENE, \%HOMOLOGOUS_GENES);
-extract_genes("${INPUT_TAXID}.paralogy", $INPUT_GENE, \%SIMILAR_GENES);
+extract_genes("${INPUT_ORGANISM}.orthology", $INPUT_GENE, \%HOMOLOGOUS_GENES);
+extract_genes("${INPUT_ORGANISM}.paralogy", $INPUT_GENE, \%SIMILAR_GENES);
 
-output_table("${INPUT_TAXID}.paralogy", \%PARALOGOUS_GENES);
-output_table("${INPUT_TAXID}.orthology", \%PARALOGOUS_GENES);
+output_table("${INPUT_ORGANISM}.paralogy", \%PARALOGOUS_GENES);
+output_table("${INPUT_ORGANISM}.orthology", \%PARALOGOUS_GENES);
 
-output_table("${OUTPUT_TAXID}.orthology", \%HOMOLOGOUS_GENES);
-output_table("${OUTPUT_TAXID}.paralogy", \%HOMOLOGOUS_GENES);
+output_table("${OUTPUT_ORGANISM}.orthology", \%HOMOLOGOUS_GENES);
+output_table("${OUTPUT_ORGANISM}.paralogy", \%HOMOLOGOUS_GENES);
 
-output_table("9606-10090.ortholog", \%SIMILAR_GENES);
+output_table("${OUTPUT_FILE}.ortholog", \%SIMILAR_GENES);
 
 ################################################################################
 ### Function ###################################################################
@@ -67,7 +83,7 @@ sub extract_paralogs {
         my $gene2 = $f[1];
         my $paralogy = $f[3];
         if ($gene1 eq $input_gene) {
-            if ($paralogy > 1) {
+            if ($paralogy > 0.5) {
                 ${$r_hits}{$gene2} = 1;
             }
         }
@@ -86,7 +102,7 @@ sub extract_orthologs {
         my $gene2 = $f[1];
         my $orthology = $f[5];
         if ($gene1 eq $input_gene) {
-            if ($orthology > 1) {
+            if ($orthology > 0.5) {
                 ${$r_hits}{$gene2} = 1;
             }
         }
