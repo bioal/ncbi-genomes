@@ -44,8 +44,8 @@ for my $line (@LINES) {
     my $bit_score = $f[-1];
     my $human_mouse = "${human_gene}\t${mouse_gene}";
     my $mouse_human = "${mouse_gene}\t${human_gene}";
-    if ($ORTHOLOGY{$human_mouse} && $ORTHOLOGY{$human_mouse} > 1 ||
-        $ORTHOLOGY{$mouse_human} && $ORTHOLOGY{$mouse_human} > 1) {
+    if ($ORTHOLOGY{$human_mouse} && $ORTHOLOGY{$human_mouse} > 0.5 ||
+        $ORTHOLOGY{$mouse_human} && $ORTHOLOGY{$mouse_human} > 0.5) {
         if (! $ANCHOR{$human_gene} && ! $ANCHOR{$mouse_gene}) {
             push @ANCHOR_PAIR, "${human_gene}\t${mouse_gene}";
             $ANCHOR{$human_gene}{member} = $human_gene;
@@ -114,8 +114,8 @@ for my $line (@LINES) {
 
     my $human_mouse = "${human_gene}\t${mouse_gene}";
     my $mouse_human = "${mouse_gene}\t${human_gene}";
-    if ($GROUPED_ORTHOLOGY{$human_mouse} && $GROUPED_ORTHOLOGY{$human_mouse} > 1 &&
-        $GROUPED_ORTHOLOGY{$mouse_human} && $GROUPED_ORTHOLOGY{$mouse_human} > 1) {
+    if ($GROUPED_ORTHOLOGY{$human_mouse} && $GROUPED_ORTHOLOGY{$human_mouse} > 0.5 &&
+        $GROUPED_ORTHOLOGY{$mouse_human} && $GROUPED_ORTHOLOGY{$mouse_human} > 0.5) {
         my $human_output = $human_gene;
         my $mouse_output = $mouse_gene;
 
@@ -188,7 +188,7 @@ sub filter_by_orthology {
     my @out;
     for my $gene (split(/,/, $genes)) {
         if ($ORTHOLOGY{"${anchor}\t${gene}"} &&
-            $ORTHOLOGY{"${anchor}\t${gene}"} > 1) {
+            $ORTHOLOGY{"${anchor}\t${gene}"} > 0.5) {
             push(@out, $gene);
         }
     }
