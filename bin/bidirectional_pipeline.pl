@@ -140,7 +140,7 @@ sub calculate_orthology {
 
 if (-s "${NAME1}-${NAME2}.score" and -s "${NAME1}.orthology" and -s "${NAME2}.orthology") {
     if ($OPT{f} or ! -s "${NAME1}-${NAME2}.ortholog") {
-        exec_with_time("cat ${NAME1}-${NAME2}.score | eval_bidirectional.pl ${NAME1}.orthology ${NAME2}.orthology > ${NAME1}-${NAME2}.ortholog");
+        exec_with_time("cat ${NAME1}-${NAME2}.score | eval_bidirectional_scores.pl ${NAME1}.orthology ${NAME2}.orthology > ${NAME1}-${NAME2}.ortholog");
         system "cat 9606-10090.ortholog | compare_with_ncbi.pl -3 > /dev/null";
     }
 }
