@@ -289,9 +289,11 @@ sub get_start_idx {
     my $start_idx = $i;
     my $count = 0;
     while ($count < $NUM_BEFORE && $start_idx > 0) {
-        $start_idx--;
-        if ($NC[$start_idx] eq $NC[$i]) {
+        if ($NC[$start_idx-1] eq $NC[$i]) {
+            $start_idx--;
             $count++;
+        } else {
+            last;
         }
     }
 
@@ -304,9 +306,11 @@ sub get_end_idx {
     my $end_idx = $i;
     my $count = 0;
     while ($count < $NUM_AFTER && $end_idx < $#LINE) {
-        $end_idx++;
-        if ($NC[$end_idx] eq $NC[$i]) {
+        if ($NC[$end_idx+1] eq $NC[$i]) {
+            $end_idx++;
             $count++;
+        } else {
+            last;
         }
     }
 
