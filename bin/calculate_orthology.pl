@@ -30,10 +30,10 @@ while (<PARALOG>) {
     if (!$THRESHOLD_SCORE{$geneid1} || $score > $THRESHOLD_SCORE{$geneid1}) {
         $THRESHOLD_SCORE{$geneid1} = $score;
     }
-    if ($paralogy <= 1) {
+    if ($paralogy <= 0.5) {
         $LOWER_THRESHOLD{$geneid1} = $score;
     }
-    if ($paralogy > 1) {
+    if ($paralogy > 0.5) {
         $PARALOGS{$geneid1}{$geneid2} = 1;
     }
 }
@@ -68,11 +68,7 @@ sub get_paralogs {
 
 sub get_orthology_score {
     my ($score, $threshold_score) = @_;
+    $threshold_score ||= 0;
 
-    my $orthology = 1000;
-    if ($threshold_score) {
-        $orthology = $score / $threshold_score;
-    }
-
-    return $orthology;
+    return $score / ($score + $threshold_score);
 }
