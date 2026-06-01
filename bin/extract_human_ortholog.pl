@@ -67,6 +67,8 @@ sub extract_human_ortholog {
             my $id2 = symbol_to_id($symbol2, $filename);
             if ($id1 && $id2) {
                 print "$id1,$id2\t$filename\ttwo\n";
+            } elsif ($id1) {
+                print "$id1\t$filename\tone\n";
             }
         } elsif (/Orthologous to human (\S+)/) {
             my $symbol = $1;
@@ -118,6 +120,8 @@ sub symbol_to_id {
                 return "9541";
             } elsif ($symbol eq "C17orf49") {
                 return "124944";
+            } elsif ($symbol eq "C18orf21") {
+                return "83608";
             } elsif ($symbol eq "NDUFA4") {
                 return "4697";
             } elsif ($symbol eq "TDGF1") {
