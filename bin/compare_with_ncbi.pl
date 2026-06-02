@@ -6,12 +6,10 @@ my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM
 -f: output only false
--t: output only true
--3: compare with both
 ";
 
 my %OPT;
-getopts('ft3', \%OPT);
+getopts('f', \%OPT);
 
 my %SYMBOL;
 read_gene_info(
@@ -41,41 +39,27 @@ while (<STDIN>) {
     my $comparison = eval_results(\%REF, $gene1, $gene2);
     my $comparison2 = eval_results(\%REF2, $gene1, $gene2);
     $COUNT_ALL++;
-    if ($OPT{3}) {
-        if ($comparison eq "true" && $comparison2 eq "true") {
-            print $_, "\t", "both", "\n" if !$OPT{f};
-            $COUNT_BOTH++;
-        } elsif ($comparison eq "true") {
-            print $_, "\t", "ncbi_orthologs", "\n" if !$OPT{f};
-            $COUNT_NCBI++;
-        } elsif ($comparison2 eq "true") {
-            print $_, "\t", "curated", "\n" if !$OPT{f};
-            $COUNT_SUMMARY++;
-        } else {
-            my $match3 = match_symbols($gene1, $gene2, \%SYMBOL);
-            if ($match3) {
-                print $_, "\t", "symbols_match", "\n" if !$OPT{f};
-                $COUNT_MATCH_SYMBOLS++;
-            } else {
-                print $_, "\t", "false", "\n" if !$OPT{f};
-                my @symbols1 = get_symbols($gene1);
-                my @symbols2 = get_symbols($gene2);
-                print $_, "\t@symbols1\t@symbols2\n" if $OPT{f};
-                $COUNT_FALSE++;
-            }
-        }
-        next;
-    }
-    if ($OPT{f}) {
-        if ($comparison eq "false") {
-            print $_, "\n";
-        }
-    } elsif ($OPT{t}) {
-        if ($comparison eq "true") {
-            print $_, "\n";
-        }
+    if ($comparison eq "true" && $comparison2 eq "true") {
+        print $_, "\t", "both", "\n" if !$OPT{f};
+        $COUNT_BOTH++;
+    } elsif ($comparison eq "true") {
+        print $_, "\t", "ncbi_orthologs", "\n" if !$OPT{f};
+        $COUNT_NCBI++;
+    } elsif ($comparison2 eq "true") {
+        print $_, "\t", "curated", "\n" if !$OPT{f};
+        $COUNT_SUMMARY++;
     } else {
-        print $_, "\t", $comparison, "\n";
+        my $match3 = match_symbols($gene1, $gene2, \%SYMBOL);
+        if ($match3) {
+            print $_, "\t", "symbols_match", "\n" if !$OPT{f};
+            $COUNT_MATCH_SYMBOLS++;
+        } else {
+            print $_, "\t", "false", "\n" if !$OPT{f};
+            my @symbols1 = get_symbols($gene1);
+            my @symbols2 = get_symbols($gene2);
+            print $_, "\t@symbols1\t@symbols2\n" if $OPT{f};
+            $COUNT_FALSE++;
+        }
     }
 }
 my $RATE = sprintf("%.2f", ($COUNT_BOTH + $COUNT_NCBI + $COUNT_SUMMARY + $COUNT_MATCH_SYMBOLS) / $COUNT_ALL * 100);
