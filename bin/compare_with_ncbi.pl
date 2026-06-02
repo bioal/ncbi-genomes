@@ -23,7 +23,7 @@ my $REFERENCE2 = "/home/chiba/github/bioal/human-mouse/v2/from_mouse_summary";
 my %REF;
 my %REF2;
 read_reference($REFERENCE, \%REF);
-read_reference_multi_genes($REFERENCE2, \%REF2);
+read_reference($REFERENCE2, \%REF2);
 
 my $COUNT_ALL = 0;
 my $COUNT_BOTH = 0;
@@ -38,6 +38,7 @@ while (<STDIN>) {
     my $gene2 = $f[1];
     my $comparison = eval_results(\%REF, $gene1, $gene2);
     my $comparison2 = eval_results(\%REF2, $gene1, $gene2);
+    my $match = match_symbols($gene1, $gene2, \%SYMBOL);
     $COUNT_ALL++;
     if ($comparison eq "true" && $comparison2 eq "true") {
         print $_, "\t", "both", "\n" if !$OPT{f};
@@ -48,18 +49,15 @@ while (<STDIN>) {
     } elsif ($comparison2 eq "true") {
         print $_, "\t", "curated", "\n" if !$OPT{f};
         $COUNT_SUMMARY++;
+    } elsif ($match) {
+        print $_, "\t", "symbols_match", "\n" if !$OPT{f};
+        $COUNT_MATCH_SYMBOLS++;
     } else {
-        my $match3 = match_symbols($gene1, $gene2, \%SYMBOL);
-        if ($match3) {
-            print $_, "\t", "symbols_match", "\n" if !$OPT{f};
-            $COUNT_MATCH_SYMBOLS++;
-        } else {
-            print $_, "\t", "false", "\n" if !$OPT{f};
-            my @symbols1 = get_symbols($gene1);
-            my @symbols2 = get_symbols($gene2);
-            print $_, "\t@symbols1\t@symbols2\n" if $OPT{f};
-            $COUNT_FALSE++;
-        }
+        print $_, "\t", "false", "\n" if !$OPT{f};
+        my @symbols1 = get_symbols($gene1);
+        my @symbols2 = get_symbols($gene2);
+        print $_, "\t@symbols1\t@symbols2\n" if $OPT{f};
+        $COUNT_FALSE++;
     }
 }
 my $RATE = sprintf("%.2f", ($COUNT_BOTH + $COUNT_NCBI + $COUNT_SUMMARY + $COUNT_MATCH_SYMBOLS) / $COUNT_ALL * 100);
@@ -96,25 +94,14 @@ sub read_reference {
     while (<FILE>) {
         chomp;
         my @f = split(/\t/, $_, -1);
-        my $gene1 = $f[0];
-        my $gene2 = $f[1];
-        ${$r_hash}{"${gene1}\t${gene2}"} = 1;
-    }
-    close(FILE);
-}
-
-sub read_reference_multi_genes {
-    my ($file, $r_hash) = @_;
-
-    open(FILE, "$file") || die "$!";
-    while (<FILE>) {
-        chomp;
-        my @f = split(/\t/, $_, -1);
         my $genes1 = $f[0];
-        my $gene2 = $f[1];
+        my $genes2 = $f[1];
         my @genes1 = split(/,/, $genes1);
+        my @genes2 = split(/,/, $genes2);
         for my $gene1 (@genes1) {
-            ${$r_hash}{"${gene1}\t${gene2}"} = 1;
+            for my $gene2 (@genes2) {
+                ${$r_hash}{"${gene1}\t${gene2}"} = 1;
+            }
         }
     }
     close(FILE);
