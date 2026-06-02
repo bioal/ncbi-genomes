@@ -7,21 +7,21 @@ my $USAGE=
 "Usage: $PROGRAM
 -f: output only false
 -t: output only true
--1: compare with ncbi_orthologs
--2: compare with curated orthologs
 -3: compare with both
 ";
 
 my %OPT;
-getopts('ft123', \%OPT);
+getopts('ft3', \%OPT);
 
 my %SYMBOL;
 read_gene_info(
     "/home/chiba/github/bioal/human-mouse/ncbi_orthologs/gene_info.2026-04-02",
     \%SYMBOL);
 
-my $REFERENCE = "/home/chiba/github/bioal/human-mouse/ncbi_orthologs/human-mouse.2026-04-02";
-my $REFERENCE2 = "/home/chiba/github/dbcls/ncbigene-rdf/data/mouse/human_mouse.orthologs";
+# my $REFERENCE = "/home/chiba/github/bioal/human-mouse/ncbi_orthologs/human-mouse.2026-04-02";
+my $REFERENCE = "/home/chiba/github/bioal/human-mouse/v2/ncbi-orthologs.2026-06-01";
+# my $REFERENCE2 = "/home/chiba/github/dbcls/ncbigene-rdf/data/mouse/human_mouse.orthologs";
+my $REFERENCE2 = "/home/chiba/github/bioal/human-mouse/v2/from_mouse_summary";
 my %REF;
 my %REF2;
 read_reference($REFERENCE, \%REF);
@@ -65,9 +65,6 @@ while (<STDIN>) {
             }
         }
         next;
-    }
-    if ($OPT{2}) {
-        $comparison = $comparison2;
     }
     if ($OPT{f}) {
         if ($comparison eq "false") {
