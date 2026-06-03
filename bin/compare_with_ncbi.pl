@@ -42,17 +42,26 @@ while (<STDIN>) {
     my $comparison3 = eval_results(\%REF3, $gene1, $gene2);
     my $match = match_symbols($gene1, $gene2, \%SYMBOL);
     $COUNT_ALL++;
-    if ($comparison eq "true" || $comparison2 eq "true" || $comparison3 eq "true") {
+    if ($comparison ne "false" || $comparison2 ne "false" || $comparison3 ne "false") {
         $COUNT_NCBI++;
         my $result = "";
-        if ($comparison3 eq "true") {
-            $result .= "H";
-        }
-        if ($comparison eq "true") {
+        if ($comparison eq "exact") {
             $result .= "N";
         }
-        if ($comparison2 eq "true") {
+        if ($comparison eq "partial") {
+            $result .= "n";
+        }
+        if ($comparison2 eq "exact") {
             $result .= "T";
+        }
+        if ($comparison2 eq "partial") {
+            $result .= "t";
+        }
+        if ($comparison3 eq "exact") {
+            $result .= "H";
+        }
+        if ($comparison3 eq "partial") {
+            $result .= "h";
         }
         print $_, "\t", $result, "\n" if !$OPT{f};
     } elsif ($match) {
@@ -81,10 +90,18 @@ sub eval_results {
 
     my @genes1 = split(/,/, $genes1);
     my @genes2 = split(/,/, $genes2);
+
+    my @genes1_sorted = sort @genes1;
+    my @genes2_sorted = sort @genes2;
+    my $sorted_pair = join(",", @genes1_sorted) . "\t" . join(",", @genes2_sorted);
+    if (${$r_hash}{$sorted_pair}) {
+        return "exact";
+    }
+
     foreach my $gene1 (@genes1) {
         foreach my $gene2 (@genes2) {
             if (${$r_hash}{"${gene1}\t${gene2}"}) {
-                return "true";
+                return "partial";
             }
         }
     }
@@ -102,6 +119,12 @@ sub read_reference {
         my $genes2 = $f[1];
         my @genes1 = split(/,/, $genes1);
         my @genes2 = split(/,/, $genes2);
+
+        my @genes1_sorted = sort @genes1;
+        my @genes2_sorted = sort @genes2;
+        my $sorted_pair = join(",", @genes1_sorted) . "\t" . join(",", @genes2_sorted);
+        ${$r_hash}{$sorted_pair} = 1;
+
         for my $gene1 (@genes1) {
             for my $gene2 (@genes2) {
                 ${$r_hash}{"${gene1}\t${gene2}"} = 1;
