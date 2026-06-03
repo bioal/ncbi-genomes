@@ -44,27 +44,31 @@ while (<STDIN>) {
     $COUNT_ALL++;
     if ($comparison eq "true" || $comparison2 eq "true" || $comparison3 eq "true") {
         $COUNT_NCBI++;
-        if ($comparison eq "true") {
-            print $_, "\t", "ncbi_orthologs", "\n" if !$OPT{f};
-        } elsif ($comparison2 eq "true") {
-            print $_, "\t", "curated", "\n" if !$OPT{f};
-        } elsif ($comparison3 eq "true") {
-            print $_, "\t", "homologene", "\n" if !$OPT{f};
+        my $result = "";
+        if ($comparison3 eq "true") {
+            $result .= "H";
         }
+        if ($comparison eq "true") {
+            $result .= "N";
+        }
+        if ($comparison2 eq "true") {
+            $result .= "T";
+        }
+        print $_, "\t", $result, "\n" if !$OPT{f};
     } elsif ($match) {
         print $_, "\t", "symbols_match", "\n" if !$OPT{f};
         $COUNT_MATCH_SYMBOLS++;
     } else {
-        print $_, "\t", "false", "\n" if !$OPT{f};
+        print $_, "\t", "new", "\n" if !$OPT{f};
         my @symbols1 = get_symbols($gene1);
         my @symbols2 = get_symbols($gene2);
         print $_, "\t@symbols1\t@symbols2\n" if $OPT{f};
         $COUNT_FALSE++;
     }
 }
-my $RATE = sprintf("%.2f", ($COUNT_NCBI + $COUNT_MATCH_SYMBOLS) / $COUNT_ALL * 100);
+my $RATE = sprintf("%.2f", $COUNT_NCBI / $COUNT_ALL * 100);
 print STDERR "match:\t", $COUNT_NCBI, "\n";
-print STDERR "symbol:\t", $COUNT_NCBI + $COUNT_MATCH_SYMBOLS, "\n";
+print STDERR "symbol:\t", $COUNT_MATCH_SYMBOLS, "\n";
 print STDERR "others:\t", $COUNT_FALSE, "\n";
 print STDERR "all:\t", $COUNT_ALL, "\n";
 print STDERR "rate:\t", $RATE, "\%\n";
