@@ -20,15 +20,19 @@ read_gene_info(
 my $REFERENCE = "/home/chiba/github/bioal/human-mouse/v2/ncbi-orthologs.2026-06-01";
 # my $REFERENCE2 = "/home/chiba/github/dbcls/ncbigene-rdf/data/mouse/human_mouse.orthologs";
 my $REFERENCE2 = "/home/chiba/github/bioal/human-mouse/v2/from_mouse_summary";
+my $REFERENCE3 = "/home/chiba/github/bioal/human-mouse/v2/human-mouse.homologene.tsv";
 my %REF;
 my %REF2;
+my %REF3;
 read_reference($REFERENCE, \%REF);
 read_reference($REFERENCE2, \%REF2);
+read_reference($REFERENCE3, \%REF3);
 
 my $COUNT_ALL = 0;
 my $COUNT_BOTH = 0;
 my $COUNT_NCBI = 0;
 my $COUNT_SUMMARY = 0;
+my $COUNT_HOMOLOGENE = 0;
 my $COUNT_MATCH_SYMBOLS = 0;
 my $COUNT_FALSE = 0;
 while (<STDIN>) {
@@ -38,6 +42,7 @@ while (<STDIN>) {
     my $gene2 = $f[1];
     my $comparison = eval_results(\%REF, $gene1, $gene2);
     my $comparison2 = eval_results(\%REF2, $gene1, $gene2);
+    my $comparison3 = eval_results(\%REF3, $gene1, $gene2);
     my $match = match_symbols($gene1, $gene2, \%SYMBOL);
     $COUNT_ALL++;
     if ($comparison eq "true" && $comparison2 eq "true") {
@@ -49,6 +54,9 @@ while (<STDIN>) {
     } elsif ($comparison2 eq "true") {
         print $_, "\t", "curated", "\n" if !$OPT{f};
         $COUNT_SUMMARY++;
+    } elsif ($comparison3 eq "true") {
+        print $_, "\t", "homologene", "\n" if !$OPT{f};
+        $COUNT_HOMOLOGENE++;
     } elsif ($match) {
         print $_, "\t", "symbols_match", "\n" if !$OPT{f};
         $COUNT_MATCH_SYMBOLS++;
@@ -60,12 +68,10 @@ while (<STDIN>) {
         $COUNT_FALSE++;
     }
 }
-my $RATE = sprintf("%.2f", ($COUNT_BOTH + $COUNT_NCBI + $COUNT_SUMMARY + $COUNT_MATCH_SYMBOLS) / $COUNT_ALL * 100);
-print STDERR "ncbi:\t", $COUNT_BOTH + $COUNT_NCBI, "\n";
-print STDERR "text:\t", $COUNT_BOTH + $COUNT_SUMMARY, "\n";
-print STDERR "union:\t", $COUNT_BOTH + $COUNT_NCBI + $COUNT_SUMMARY, "\n";
-print STDERR "match:\t", $COUNT_BOTH + $COUNT_NCBI + $COUNT_SUMMARY + $COUNT_MATCH_SYMBOLS, "\n";
-print STDERR "undef:\t", $COUNT_FALSE, "\n";
+my $RATE = sprintf("%.2f", ($COUNT_BOTH + $COUNT_NCBI + $COUNT_SUMMARY + $COUNT_HOMOLOGENE + $COUNT_MATCH_SYMBOLS) / $COUNT_ALL * 100);
+print STDERR "match:\t", $COUNT_BOTH + $COUNT_NCBI + $COUNT_SUMMARY + $COUNT_HOMOLOGENE, "\n";
+print STDERR "symbol:\t", $COUNT_BOTH + $COUNT_NCBI + $COUNT_SUMMARY + $COUNT_HOMOLOGENE + $COUNT_MATCH_SYMBOLS, "\n";
+print STDERR "others:\t", $COUNT_FALSE, "\n";
 print STDERR "all:\t", $COUNT_ALL, "\n";
 print STDERR "rate:\t", $RATE, "\%\n";
 
