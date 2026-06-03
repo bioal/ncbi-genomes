@@ -30,8 +30,6 @@ read_reference($REFERENCE3, \%REF3);
 
 my $COUNT_ALL = 0;
 my $COUNT_NCBI = 0;
-my $COUNT_SUMMARY = 0;
-my $COUNT_HOMOLOGENE = 0;
 my $COUNT_MATCH_SYMBOLS = 0;
 my $COUNT_FALSE = 0;
 while (<STDIN>) {
@@ -44,15 +42,15 @@ while (<STDIN>) {
     my $comparison3 = eval_results(\%REF3, $gene1, $gene2);
     my $match = match_symbols($gene1, $gene2, \%SYMBOL);
     $COUNT_ALL++;
-    if ($comparison eq "true") {
-        print $_, "\t", "ncbi_orthologs", "\n" if !$OPT{f};
+    if ($comparison eq "true" || $comparison2 eq "true" || $comparison3 eq "true") {
         $COUNT_NCBI++;
-    } elsif ($comparison2 eq "true") {
-        print $_, "\t", "curated", "\n" if !$OPT{f};
-        $COUNT_SUMMARY++;
-    } elsif ($comparison3 eq "true") {
-        print $_, "\t", "homologene", "\n" if !$OPT{f};
-        $COUNT_HOMOLOGENE++;
+        if ($comparison eq "true") {
+            print $_, "\t", "ncbi_orthologs", "\n" if !$OPT{f};
+        } elsif ($comparison2 eq "true") {
+            print $_, "\t", "curated", "\n" if !$OPT{f};
+        } elsif ($comparison3 eq "true") {
+            print $_, "\t", "homologene", "\n" if !$OPT{f};
+        }
     } elsif ($match) {
         print $_, "\t", "symbols_match", "\n" if !$OPT{f};
         $COUNT_MATCH_SYMBOLS++;
@@ -64,9 +62,9 @@ while (<STDIN>) {
         $COUNT_FALSE++;
     }
 }
-my $RATE = sprintf("%.2f", ($COUNT_NCBI + $COUNT_SUMMARY + $COUNT_HOMOLOGENE + $COUNT_MATCH_SYMBOLS) / $COUNT_ALL * 100);
-print STDERR "match:\t", $COUNT_NCBI + $COUNT_SUMMARY + $COUNT_HOMOLOGENE, "\n";
-print STDERR "symbol:\t", $COUNT_NCBI + $COUNT_SUMMARY + $COUNT_HOMOLOGENE + $COUNT_MATCH_SYMBOLS, "\n";
+my $RATE = sprintf("%.2f", ($COUNT_NCBI + $COUNT_MATCH_SYMBOLS) / $COUNT_ALL * 100);
+print STDERR "match:\t", $COUNT_NCBI, "\n";
+print STDERR "symbol:\t", $COUNT_NCBI + $COUNT_MATCH_SYMBOLS, "\n";
 print STDERR "others:\t", $COUNT_FALSE, "\n";
 print STDERR "all:\t", $COUNT_ALL, "\n";
 print STDERR "rate:\t", $RATE, "\%\n";
