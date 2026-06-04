@@ -5,10 +5,12 @@ use Getopt::Std;
 my $PROGRAM = basename $0;
 my $USAGE=
 "Usage: $PROGRAM
+-r: show references only
+-R: also show references
 ";
 
 my %OPT;
-getopts('', \%OPT);
+getopts('rR', \%OPT);
 
 if (!@ARGV) {
     print STDERR $USAGE;
@@ -61,13 +63,22 @@ $SIMILAR_GENES{$INPUT_GENE} = 1;
 extract_genes("${INPUT_ORGANISM}.orthology", $INPUT_GENE, \%HOMOLOGOUS_GENES);
 extract_genes("${INPUT_ORGANISM}.paralogy", $INPUT_GENE, \%SIMILAR_GENES);
 
-output_table("${INPUT_ORGANISM}.paralogy", \%PARALOGOUS_GENES);
-output_table("${INPUT_ORGANISM}.orthology", \%PARALOGOUS_GENES);
+if (!$OPT{r}) {
+    output_table("${INPUT_ORGANISM}.paralogy", \%PARALOGOUS_GENES);
+    output_table("${INPUT_ORGANISM}.orthology", \%PARALOGOUS_GENES);
 
-output_table("${OUTPUT_ORGANISM}.orthology", \%HOMOLOGOUS_GENES);
-output_table("${OUTPUT_ORGANISM}.paralogy", \%HOMOLOGOUS_GENES);
+    output_table("${OUTPUT_ORGANISM}.orthology", \%HOMOLOGOUS_GENES);
+    output_table("${OUTPUT_ORGANISM}.paralogy", \%HOMOLOGOUS_GENES);
 
-output_table("${OUTPUT_FILE}.ortholog", \%SIMILAR_GENES);
+    output_table("${OUTPUT_FILE}.ortholog", \%SIMILAR_GENES);
+}
+
+if ($OPT{r} || $OPT{R}) {
+    output_table("/home/chiba/github/bioal/human-mouse/v2/ncbi-orthologs.2026-06-01", \%SIMILAR_GENES);
+    output_table("/home/chiba/github/bioal/human-mouse/v2/human-mouse.homologene.tsv", \%SIMILAR_GENES);
+    output_table("/home/chiba/github/bioal/human-mouse/v2/from_mouse_summary.merged", \%SIMILAR_GENES);
+    output_table("/home/chiba/github/bioal/human-mouse/mgi/human-mouse", \%SIMILAR_GENES);
+}
 
 ################################################################################
 ### Function ###################################################################
