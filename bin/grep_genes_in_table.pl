@@ -39,7 +39,13 @@ while (<STDIN>) {
     my $genes1 = $f[0];
     my $genes2 = $f[1];
     if (includes_target_gene($genes1, \%TARGET_GENES) || includes_target_gene($genes2, \%TARGET_GENES)) {
-        print $_, "\t", get_symbols($genes1), " - ", get_symbols($genes2), "\n";
+        if ($f[-2] eq get_symbol_chars($genes1) && $f[-1] eq get_symbol_chars($genes2)) {
+            splice(@f, -2);
+        }
+        print join("\t",
+                   @f,
+                   get_symbols($genes1) . " - " . get_symbols($genes2)
+            ), "\n";
     }
 }
 
@@ -89,6 +95,24 @@ sub get_symbols {
             } elsif ($TARGET_GENES{$gene}) {
                 $symbol = "\e[38;5;45m$symbol\e[0m";
             }
+            push(@symbols, $symbol);
+        }
+    }
+
+    if (@symbols == 0) {
+        return 0;
+    } else {
+        return join(",", @symbols);
+    }
+}
+
+sub get_symbol_chars {
+    my ($genes) = @_;
+
+    my @symbols;
+    foreach my $gene (split(/,/, $genes)) {
+        if ($INFO{$gene} && $INFO{$gene}{symbol}) {
+            my $symbol = $INFO{$gene}{symbol};
             push(@symbols, $symbol);
         }
     }
