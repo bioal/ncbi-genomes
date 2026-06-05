@@ -18,15 +18,20 @@ read_gene_info(
 
 # my $REFERENCE = "/home/chiba/github/bioal/human-mouse/ncbi_orthologs/human-mouse.2026-04-02";
 my $REFERENCE = "/home/chiba/github/bioal/human-mouse/v2/ncbi-orthologs.2026-06-01";
-# my $REFERENCE2 = "/home/chiba/github/dbcls/ncbigene-rdf/data/mouse/human_mouse.orthologs";
+
+# my $REFERENCE2 = "/home/chiba/github/dbcls/ncbigene-rdf/data/mouse/human_mouse.orthologs.merged";
 my $REFERENCE2 = "/home/chiba/github/bioal/human-mouse/v2/from_mouse_summary";
+
 my $REFERENCE3 = "/home/chiba/github/bioal/human-mouse/v2/human-mouse.homologene.tsv";
+my $REFERENCE4 = "/home/chiba/github/bioal/human-mouse/mgi/human-mouse";
 my %REF;
 my %REF2;
 my %REF3;
+my %REF4;
 read_reference($REFERENCE, \%REF);
 read_reference($REFERENCE2, \%REF2);
 read_reference($REFERENCE3, \%REF3);
+read_reference($REFERENCE4, \%REF4);
 
 my $COUNT_ALL = 0;
 my $COUNT_NCBI = 0;
@@ -40,9 +45,10 @@ while (<STDIN>) {
     my $comparison = eval_results(\%REF, $gene1, $gene2);
     my $comparison2 = eval_results(\%REF2, $gene1, $gene2);
     my $comparison3 = eval_results(\%REF3, $gene1, $gene2);
+    my $comparison4 = eval_results(\%REF4, $gene1, $gene2);
     my $match = match_symbols($gene1, $gene2, \%SYMBOL);
     $COUNT_ALL++;
-    if ($comparison ne "false" || $comparison2 ne "false" || $comparison3 ne "false") {
+    if ($comparison ne "false" || $comparison2 ne "false" || $comparison3 ne "false" || $comparison4 ne "false") {
         $COUNT_NCBI++;
         my $result = "";
         if ($comparison eq "exact") {
@@ -63,12 +69,18 @@ while (<STDIN>) {
         if ($comparison3 eq "partial") {
             $result .= "h";
         }
+        if ($comparison4 eq "exact") {
+            $result .= "M";
+        }
+        if ($comparison4 eq "partial") {
+            $result .= "m";
+        }
         print $_, "\t", $result, "\n" if !$OPT{f};
     } elsif ($match) {
         print $_, "\t", "symbols_match", "\n" if !$OPT{f};
         $COUNT_MATCH_SYMBOLS++;
     } else {
-        print $_, "\t", "new", "\n" if !$OPT{f};
+        print $_, "\t", "false", "\n" if !$OPT{f};
         my @symbols1 = get_symbols($gene1);
         my @symbols2 = get_symbols($gene2);
         print $_, "\t@symbols1\t@symbols2\n" if $OPT{f};
