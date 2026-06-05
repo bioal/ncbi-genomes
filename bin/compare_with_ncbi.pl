@@ -20,7 +20,7 @@ read_gene_info(
 my $REFERENCE = "/home/chiba/github/bioal/human-mouse/v2/ncbi-orthologs.2026-06-01";
 
 # my $REFERENCE2 = "/home/chiba/github/dbcls/ncbigene-rdf/data/mouse/human_mouse.orthologs.merged";
-my $REFERENCE2 = "/home/chiba/github/bioal/human-mouse/v2/from_mouse_summary";
+my $REFERENCE2 = "/home/chiba/github/bioal/human-mouse/v2/from_mouse_summary.merged";
 
 my $REFERENCE3 = "/home/chiba/github/bioal/human-mouse/v2/human-mouse.homologene.tsv";
 my $REFERENCE4 = "/home/chiba/github/bioal/human-mouse/mgi/human-mouse";
@@ -98,7 +98,7 @@ print STDERR "rate:\t", $RATE, "\%\n";
 ### Function ###################################################################
 ################################################################################
 sub eval_results {
-    my ($r_hash, $genes1, $genes2) = @_;
+    my ($r_ref, $genes1, $genes2) = @_;
 
     my @genes1 = split(/,/, $genes1);
     my @genes2 = split(/,/, $genes2);
@@ -106,13 +106,13 @@ sub eval_results {
     my @genes1_sorted = sort @genes1;
     my @genes2_sorted = sort @genes2;
     my $sorted_pair = join(",", @genes1_sorted) . "\t" . join(",", @genes2_sorted);
-    if (${$r_hash}{$sorted_pair}) {
+    if (${$r_ref}{"exact"}{$sorted_pair}) {
         return "exact";
     }
 
     foreach my $gene1 (@genes1) {
         foreach my $gene2 (@genes2) {
-            if (${$r_hash}{"${gene1}\t${gene2}"}) {
+            if (${$r_ref}{"match"}{"${gene1}\t${gene2}"}) {
                 return "partial";
             }
         }
@@ -121,7 +121,7 @@ sub eval_results {
 }
 
 sub read_reference {
-    my ($file, $r_hash) = @_;
+    my ($file, $r_ref) = @_;
 
     open(FILE, "$file") || die "$!";
     while (<FILE>) {
@@ -135,11 +135,11 @@ sub read_reference {
         my @genes1_sorted = sort @genes1;
         my @genes2_sorted = sort @genes2;
         my $sorted_pair = join(",", @genes1_sorted) . "\t" . join(",", @genes2_sorted);
-        ${$r_hash}{$sorted_pair} = 1;
+        ${$r_ref}{"exact"}{$sorted_pair} = 1;
 
         for my $gene1 (@genes1) {
             for my $gene2 (@genes2) {
-                ${$r_hash}{"${gene1}\t${gene2}"} = 1;
+                ${$r_ref}{"match"}{"${gene1}\t${gene2}"} = 1;
             }
         }
     }
