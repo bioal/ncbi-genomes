@@ -132,6 +132,13 @@ sub read_reference {
         my @genes1 = split(/,/, $genes1);
         my @genes2 = split(/,/, $genes2);
 
+        if (@genes1 == 1 && @genes2 == 1 &&
+            $f[2] && $f[2] eq "several") {
+            # 'several' in NCBI summary text means not exact match
+            ${$r_ref}{"match"}{"${genes1[0]}\t${genes2[0]}"} = 1;
+            next;
+        }
+
         my @genes1_sorted = sort @genes1;
         my @genes2_sorted = sort @genes2;
         my $sorted_pair = join(",", @genes1_sorted) . "\t" . join(",", @genes2_sorted);
