@@ -68,6 +68,7 @@ sub extract_human_ortholog {
             if ($id1 && $id2) {
                 print "$id1,$id2\t$filename\ttwo\n";
             } elsif ($id1) {
+                # Raph1: second symbol is errornous => omit it
                 print "$id1\t$filename\tone\n";
             }
         } elsif (/Orthologous to human (\S+)/) {
@@ -121,6 +122,7 @@ sub symbol_to_id {
             } elsif ($symbol eq "C17orf49") {
                 return "124944";
             } elsif ($symbol eq "C18orf21") {
+                # mapped to RMP24 and RMP24P1 (pseudo gene) => select RMP24
                 return "83608";
             } elsif ($symbol eq "NDUFA4") {
                 return "4697";
@@ -128,12 +130,6 @@ sub symbol_to_id {
                 return "6997";
             } elsif ($symbol eq "DUSP13") {
                 return "51207";
-            } elsif ($symbol eq "") {
-                return "";
-            } elsif ($symbol eq "") {
-                return "";
-            } elsif ($symbol eq "") {
-                return "";
             } else {
                 print STDERR "WARNING: $symbol is duplicated synonym ($filename)\n";
                 return;
