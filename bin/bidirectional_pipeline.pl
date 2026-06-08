@@ -75,6 +75,8 @@ sub homology_search {
             exec_with_time("cat ${pair}.tsv | map_to_gene.pl $PWD/$MAP_TO_GENE_DIR/$name1 $PWD/$MAP_TO_GENE_DIR/$name2 > ${pair}.gene 2> ${pair}.gene.err")
         }
     }
+
+    # Output max bit score for each gene pair
     my $homology_file = "${pair}.homology";
     if ($name1 eq $name2) {
         $homology_file = "${name1}.homology";
