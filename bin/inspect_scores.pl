@@ -74,6 +74,8 @@ if (!$OPT{r}) {
 }
 
 if ($OPT{r} || $OPT{R}) {
+    print "\n";
+    print "== References ==\n";
     output_table("/home/chiba/github/bioal/human-mouse/v2/ncbi-orthologs.2026-06-01", \%SIMILAR_GENES);
     output_table("/home/chiba/github/bioal/human-mouse/v2/human-mouse.homologene.tsv", \%SIMILAR_GENES);
     output_table("/home/chiba/github/bioal/human-mouse/v2/from_mouse_summary.merged", \%SIMILAR_GENES);
