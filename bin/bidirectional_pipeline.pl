@@ -86,27 +86,27 @@ sub homology_search {
     }
 }
 
-mean_bit_scores($NAME1, $NAME2);
-mean_bit_scores($NAME2, $NAME1);
-mean_bit_scores_intra($NAME1);
-mean_bit_scores_intra($NAME2);
+inter_bit_scores($NAME1, $NAME2);
+inter_bit_scores($NAME2, $NAME1);
+intra_bit_scores($NAME1);
+intra_bit_scores($NAME2);
 
-sub mean_bit_scores {
+sub inter_bit_scores {
     my ($name1, $name2) = @_;
 
     if (-s "${name1}-${name2}.homology" and -s "${name2}-${name1}.homology") {
         if ($OPT{f} or ! -s "${name1}-${name2}.score") {
-            exec_with_time("mean_bit_scores.pl ${name1}-${name2}.homology ${name2}-${name1}.homology > ${name1}-${name2}.score");
+            exec_with_time("inter_bit_scores.pl ${name1}-${name2}.homology ${name2}-${name1}.homology > ${name1}-${name2}.score");
         }
     }
 }
 
-sub mean_bit_scores_intra {
+sub intra_bit_scores {
     my ($name1) = @_;
 
     if (-s "${name1}.homology") {
         if ($OPT{f} or ! -s "${name1}.score") {
-            exec_with_time("mean_bit_scores_intra.pl ${name1}.homology > ${name1}.score");
+            exec_with_time("intra_bit_scores.pl ${name1}.homology > ${name1}.score");
         }
     }
 }
