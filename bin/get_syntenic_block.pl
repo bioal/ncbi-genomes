@@ -9,7 +9,7 @@ my $USAGE=
 -c: number of genes before and after the gene
 -b: number of genes before the gene
 -a: number of genes after the gene
--R: cancel reverse order of the output
+-R: reverse order for - orientation
 -s: output only the syntenic score
 -v: verbose mode for scoring
 ";
@@ -179,7 +179,7 @@ sub get_syntenic_block {
     for my $gene (@INPUT_GENE) {
         if ($FOUND{$gene}) {
             my $out = $BLOCK{$gene};
-            if ($REVERSE_ORIENTATION{$gene} && !$OPT{R}) {
+            if ($REVERSE_ORIENTATION{$gene} && $OPT{R}) {
                 $out = reverse_block($BLOCK{$gene});
             }
             push @OUT, $out;
@@ -249,6 +249,14 @@ sub reverse_block {
 sub paste_blocks {
     my (@block) = @_;
 
+    # my $max_lines = 0;
+    # for my $block (@block) {
+    #     my @block_line = split(/\n/, $block);
+    #     if (@block_line > $max_lines) {
+    #         $max_lines = @block_line;
+    #     }
+    # }
+
     my @out;
     for my $block (@block) {
         my @block_line = split(/\n/, $block);
@@ -259,6 +267,20 @@ sub paste_blocks {
                 $out[$i] = $block_line[$i];
             }
         }
+        # for (my $i=0; $i<$max_lines; $i++) {
+        #     if (defined $out[$i]) {
+        #         $out[$i] .= "\t";
+        #         if ($block_line[$i]) {
+        #             $out[$i] .= $block_line[$i];
+        #         }
+        #     } else {
+        #         if ($block_line[$i]) {
+        #             $out[$i] = $block_line[$i];
+        #         } else {
+        #             $out[$i] = "";
+        #         }
+        #     }
+        # }
     }
 
     return join("\n", @out);
